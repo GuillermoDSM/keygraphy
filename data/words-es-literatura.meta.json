@@ -1,0 +1,19 @@
+{
+  "word_count": 10000,
+  "unique_source_words": 19447,
+  "source_tokens": 243545,
+  "letter_order": "eaosrnlidutcmpbvhqgójíéfázyúñx",
+  "sources": [
+    {
+      "path": "data/books/la-iliada.json",
+      "word_tokens": 134386,
+      "sha256": "c12717409ad3b34cbe461d2ef3a5db1fbf06dd985ba1d30bed959775f026339f"
+    },
+    {
+      "path": "data/books/la-odisea.json",
+      "word_tokens": 109159,
+      "sha256": "359c92fce0a7fbd30577491a3bb76884deb3b2b564cd984cd872fcd8d40bc725"
+    }
+  ],
+  "sha256": "c4173d46cb133aeb4e64fcb4c0d289173b3c116f57bd786ef4b780da9f24eb8f"
+}

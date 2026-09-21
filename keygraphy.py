@@ -1,0 +1,1814 @@
+#!/usr/bin/env python3
+"""A minimal adaptive typing tutor for the terminal."""
+
+from __future__ import annotations
+
+import argparse
+from bisect import bisect_right
+import curses
+import json
+import locale
+import math
+import os
+import random
+import re
+import time
+from dataclasses import asdict, dataclass, field
+from functools import lru_cache
+from pathlib import Path
+from typing import Iterable
+
+
+APP_NAME = "keygraphy"
+VERSION = "0.3.0"
+LETTER_ORDER = "eaosrnlidutcmpbvhqgójíéfázyúñx"
+LEGACY_LETTER_ORDER = "eaosrnidlctumpbgvyqhfzjxkwñ"
+INITIAL_LETTERS = 6
+TARGET_WPM = 35
+MIN_TARGET_WPM = 15
+MAX_TARGET_WPM = 150
+TARGET_WPM_STEP = 5
+DEFAULT_ESC_DELAY_MS = 50
+LESSON_LENGTH = 120
+RESULT_FRAME_MS = 16
+RESULT_COUNT_MS_PER_UNIT = 2
+PARTIAL_BLOCKS = "▏▎▍▌▋▊▉"
+SPEED_FILTER_ALPHA = 0.1
+MIN_WORD_POOL = 15
+MAX_FREQUENT_WORDS = 1000
+DATA_DIR = Path(__file__).resolve().parent / "data"
+BOOK_DIR = DATA_DIR / "books"
+WORD_PACKAGES = {
+    "literatura": DATA_DIR / "words-es-literatura.json",
+}
+WORD_PACKAGE_LABELS = {
+    "literatura": "Literatura española · obras clásicas",
+}
+DEFAULT_WORD_PACKAGE = "literatura"
+MODES = ("practice", "book")
+MODE_LABELS = {"practice": "Práctica adaptativa", "book": "Transcribir libro"}
+KEYBOARD_VIEWS = ("letters", "keyboard")
+KEYBOARD_VIEW_LABELS = {
+    "letters": "Barra de letras",
+    "keyboard": "Teclado",
+}
+DEFAULT_KEYBOARD_VIEW = "keyboard"
+BOOK_PATHS = {
+    "la-iliada": BOOK_DIR / "la-iliada.json",
+    "la-odisea": BOOK_DIR / "la-odisea.json",
+}
+BOOK_LABELS = {"la-iliada": "La Ilíada", "la-odisea": "La Odisea"}
+DEFAULT_BOOK = "la-iliada"
+BOOK_LEVEL_MIN_ATTEMPTS = 500
+BOOK_LEVEL_ACCURACY = 0.95
+BOOK_LINE_WIDTH = 72
+BOOK_LEVELS = (
+    ("solo palabras", ""),
+    ("tildes", ""),
+    ("coma", ","),
+    ("punto", "."),
+    ("punto y coma", ";"),
+    ("dos puntos", ":"),
+    ("interrogación", "¿?"),
+    ("exclamación", "¡!"),
+    ("guiones", "-—"),
+    ("comillas", "\"'«»“”"),
+    ("paréntesis", "()"),
+    ("texto completo", "*"),
+)
+UNTILDED_TRANSLATION = str.maketrans("áéíóúü", "aeiouu")
+ERROR_COLOR = 196
+ERROR_RGB = (235, 71, 71)
+CURRENT_BACKGROUND = 240
+BAR_COLOR_BASE = 200
+BAR_COLOR_COUNT = 4
+BAR_RGBS = (
+    (82, 84, 90),
+    (110, 112, 119),
+    (140, 142, 150),
+    (172, 176, 186),
+)
+KEYBOARD_ROWS = (
+    ("q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "´"),
+    ("a", "s", "d", "f", "g", "h", "j", "k", "l", "ñ"),
+    ("z", "x", "c", "v", "b", "n", "m", ",", ".", "-"),
+)
+KEYBOARD_FINGER_GROUPS = (
+    ("q", "a", "z", "p", "ñ", "-", "´"),
+    ("w", "s", "x", "o", "l", "."),
+    ("e", "d", "c", "i", "k", ","),
+    ("r", "f", "v", "t", "g", "b", "y", "h", "n", "u", "j", "m"),
+)
+KEYBOARD_FINGER_BY_KEY = {
+    key: finger
+    for finger, group in enumerate(KEYBOARD_FINGER_GROUPS)
+    for key in group
+}
+KEYBOARD_HAND_GAP = 2
+KEYBOARD_COLOR_BASE = 204
+KEYBOARD_RGBS = (
+    (62, 32, 47),
+    (27, 43, 68),
+    (27, 56, 42),
+    (68, 48, 23),
+)
+KEYBOARD_256_BACKGROUNDS = (52, 18, 22, 58)
+
+
+def load_word_list(path: Path) -> tuple[str, ...]:
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise RuntimeError(f"No se pudo cargar el corpus español: {path}") from error
+    if not isinstance(raw, list) or not 5_000 <= len(raw) <= 10_000:
+        raise RuntimeError("El corpus español debe contener entre 5.000 y 10.000 palabras")
+    if not all(isinstance(word, str) and word for word in raw):
+        raise RuntimeError("El corpus español contiene entradas inválidas")
+    return tuple(raw)
+
+
+WORDS = load_word_list(WORD_PACKAGES[DEFAULT_WORD_PACKAGE])
+
+
+def select_word_package(name: str) -> None:
+    global WORDS
+    WORDS = load_word_list(WORD_PACKAGES[name])
+
+
+@dataclass
+class LetterStat:
+    hits: int = 0
+    misses: int = 0
+    time_ms: float | None = None
+    best_time_ms: float | None = None
+
+    @property
+    def attempts(self) -> int:
+        return self.hits + self.misses
+
+    @property
+    def accuracy(self) -> float:
+        return self.hits / self.attempts if self.attempts else 0.0
+
+    def append_lesson(
+        self,
+        hits: int,
+        misses: int,
+        average_time_ms: float | None,
+    ) -> None:
+        self.hits += hits
+        self.misses += misses
+        if average_time_ms is None:
+            return
+        if self.time_ms is None:
+            self.time_ms = average_time_ms
+        else:
+            self.time_ms = (
+                self.time_ms * (1 - SPEED_FILTER_ALPHA)
+                + average_time_ms * SPEED_FILTER_ALPHA
+            )
+        self.best_time_ms = min(self.best_time_ms or float("inf"), self.time_ms)
+
+
+@dataclass
+class BookPosition:
+    section: int = 0
+    chunk: int = 0
+    completed: bool = False
+    revision: str = ""
+    offset: int = 0
+
+
+@dataclass
+class Progress:
+    target_wpm: int = TARGET_WPM
+    keyboard_view: str = DEFAULT_KEYBOARD_VIEW
+    letters: dict[str, LetterStat] = field(default_factory=dict)
+    word_package: str = DEFAULT_WORD_PACKAGE
+    mode: str = "practice"
+    selected_book: str = DEFAULT_BOOK
+    book_level: int = 0
+    book_level_attempts: int = 0
+    book_level_correct: int = 0
+    books: dict[str, BookPosition] = field(default_factory=dict)
+
+    @property
+    def active_letters(self) -> str:
+        included: list[str] = []
+        for letter in LETTER_ORDER:
+            if len(included) < INITIAL_LETTERS:
+                included.append(letter)
+            elif self.best_confidence(letter) >= 1:
+                included.append(letter)
+            elif all(self.best_confidence(current) >= 1 for current in included):
+                included.append(letter)
+        return "".join(included)
+
+    @property
+    def target_time_ms(self) -> float:
+        return 60_000 / (self.target_wpm * 5)
+
+    def stat(self, letter: str) -> LetterStat:
+        return self.letters.setdefault(letter, LetterStat())
+
+    def confidence(self, letter: str) -> float:
+        stat = self.letters.get(letter)
+        if stat is None:
+            return 0.0
+        return self.target_time_ms / stat.time_ms if stat.time_ms else 0.0
+
+    def best_confidence(self, letter: str) -> float:
+        stat = self.letters.get(letter)
+        best_time_ms = stat.best_time_ms if stat is not None else None
+        return self.target_time_ms / best_time_ms if best_time_ms else 0.0
+
+    def weakest_letter(self) -> str | None:
+        learning = [
+            letter
+            for letter in self.active_letters
+            if self.best_confidence(letter) < 1
+        ]
+        return min(learning, key=self.best_confidence) if learning else None
+
+    def book_position(self, book: str | None = None) -> BookPosition:
+        return self.books.setdefault(book or self.selected_book, BookPosition())
+
+
+@dataclass(frozen=True)
+class BookSection:
+    title: str
+    chunks: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class Book:
+    slug: str
+    title: str
+    sections: tuple[BookSection, ...]
+    revision: str = ""
+
+
+BOOK_CACHE: dict[str, Book] = {}
+
+
+def load_book(slug: str) -> Book:
+    if slug in BOOK_CACHE:
+        return BOOK_CACHE[slug]
+    if slug not in BOOK_PATHS:
+        raise RuntimeError(f"Libro desconocido: {slug}")
+    path = BOOK_PATHS[slug]
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+        title = raw["metadata"]["title"]
+        revision = raw["metadata"]["content_revision"]
+        sections = tuple(
+            BookSection(section["title"], tuple(section["chunks"]))
+            for section in raw["sections"]
+        )
+        if (
+            not title
+            or not revision
+            or not sections
+            or any(not section.chunks for section in sections)
+        ):
+            raise ValueError
+    except (OSError, KeyError, TypeError, ValueError, json.JSONDecodeError) as error:
+        raise RuntimeError(f"No se pudo cargar el libro: {path}") from error
+    book = Book(slug, title, sections, revision)
+    BOOK_CACHE[slug] = book
+    return book
+
+
+def data_path() -> Path:
+    root = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local/share"))
+    return root / APP_NAME / "stats.json"
+
+
+def load_progress(path: Path | None = None) -> Progress:
+    path = path or data_path()
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+        raw_letters = raw.get("letters", {})
+        if not isinstance(raw_letters, dict):
+            raw_letters = {}
+        target_wpm = max(
+            MIN_TARGET_WPM,
+            min(int(raw.get("target_wpm", TARGET_WPM)), MAX_TARGET_WPM),
+        )
+        target_time_ms = 60_000 / (target_wpm * 5)
+        raw_keyboard_view = raw.get("keyboard_view")
+        if raw_keyboard_view in KEYBOARD_VIEWS:
+            keyboard_view = raw_keyboard_view
+        elif "keyboard_view" not in raw:
+            # Existing saves predate this preference and used the letters bar.
+            keyboard_view = "letters"
+        else:
+            keyboard_view = DEFAULT_KEYBOARD_VIEW
+        legacy_unlocked = max(
+            INITIAL_LETTERS,
+            min(
+                int(raw.get("unlocked", INITIAL_LETTERS)),
+                len(LEGACY_LETTER_ORDER),
+            ),
+        )
+        legacy_mastered = set(LEGACY_LETTER_ORDER[: legacy_unlocked - 1])
+        letters: dict[str, LetterStat] = {}
+        for letter, values in raw_letters.items():
+            if letter not in LETTER_ORDER or not isinstance(values, dict):
+                continue
+            try:
+                hits = max(0, int(values.get("hits", 0)))
+                misses = max(0, int(values.get("misses", 0)))
+                raw_time_ms = values.get("time_ms")
+                time_ms = float(raw_time_ms) if raw_time_ms is not None else None
+                raw_best_time_ms = values.get("best_time_ms")
+                best_time_ms = (
+                    float(raw_best_time_ms)
+                    if raw_best_time_ms is not None
+                    else None
+                )
+                if time_ms is not None and (time_ms <= 0 or not math.isfinite(time_ms)):
+                    raise ValueError
+                if best_time_ms is not None and (
+                    best_time_ms <= 0 or not math.isfinite(best_time_ms)
+                ):
+                    raise ValueError
+            except (TypeError, ValueError):
+                continue
+            if best_time_ms is None and time_ms is not None:
+                # Every key before the newest legacy key had already passed the
+                # old progression gate, even though that best time was not saved.
+                if letter in legacy_mastered:
+                    best_time_ms = min(time_ms, target_time_ms)
+                else:
+                    best_time_ms = time_ms
+            letters[letter] = LetterStat(
+                hits=hits,
+                misses=misses,
+                time_ms=time_ms,
+                best_time_ms=best_time_ms,
+            )
+        word_package = raw.get("word_package", DEFAULT_WORD_PACKAGE)
+        if word_package not in WORD_PACKAGES:
+            word_package = DEFAULT_WORD_PACKAGE
+        mode = raw.get("mode", "practice")
+        if mode not in MODES:
+            mode = "practice"
+        selected_book = raw.get("selected_book", DEFAULT_BOOK)
+        if selected_book not in BOOK_PATHS:
+            selected_book = DEFAULT_BOOK
+        try:
+            book_level = max(
+                0,
+                min(int(raw.get("book_level", 0)), len(BOOK_LEVELS) - 1),
+            )
+        except (TypeError, ValueError):
+            book_level = 0
+        try:
+            book_level_attempts = max(0, int(raw.get("book_level_attempts", 0)))
+        except (TypeError, ValueError):
+            book_level_attempts = 0
+        try:
+            book_level_correct = max(
+                0,
+                min(int(raw.get("book_level_correct", 0)), book_level_attempts),
+            )
+        except (TypeError, ValueError):
+            book_level_correct = 0
+        raw_books = raw.get("books", {})
+        if not isinstance(raw_books, dict):
+            raw_books = {}
+        books: dict[str, BookPosition] = {}
+        for slug, values in raw_books.items():
+            if slug not in BOOK_PATHS or not isinstance(values, dict):
+                continue
+            try:
+                revision = values.get("revision", "")
+                books[slug] = BookPosition(
+                    section=max(0, int(values.get("section", 0))),
+                    chunk=max(0, int(values.get("chunk", 0))),
+                    completed=values.get("completed", False) is True,
+                    revision=revision if isinstance(revision, str) else "",
+                    offset=max(0, int(values.get("offset", 0))),
+                )
+            except (TypeError, ValueError):
+                continue
+        return Progress(
+            target_wpm=target_wpm,
+            keyboard_view=keyboard_view,
+            letters=letters,
+            word_package=word_package,
+            mode=mode,
+            selected_book=selected_book,
+            book_level=book_level,
+            book_level_attempts=book_level_attempts,
+            book_level_correct=book_level_correct,
+            books=books,
+        )
+    except (OSError, ValueError, TypeError, json.JSONDecodeError):
+        return Progress()
+
+
+def save_progress(progress: Progress, path: Path | None = None) -> None:
+    path = path or data_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "target_wpm": progress.target_wpm,
+        "keyboard_view": progress.keyboard_view,
+        "word_package": progress.word_package,
+        "mode": progress.mode,
+        "selected_book": progress.selected_book,
+        "book_level": progress.book_level,
+        "book_level_attempts": progress.book_level_attempts,
+        "book_level_correct": progress.book_level_correct,
+        "books": {key: asdict(value) for key, value in progress.books.items()},
+        "letters": {key: asdict(value) for key, value in progress.letters.items()},
+    }
+    temporary = path.with_suffix(".tmp")
+    temporary.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    temporary.replace(path)
+
+
+def unlock_feedback(progress: Progress) -> str:
+    focus = progress.weakest_letter()
+    if focus is None:
+        return "Alfabeto completo"
+    stat = progress.stat(focus)
+    current = f"{stat.time_ms:.0f}" if stat.time_ms is not None else "--"
+    best = f"{stat.best_time_ms:.0f}" if stat.best_time_ms is not None else "--"
+    return (
+        f"actual {current} ms · mejor {best} ms · "
+        f"objetivo {progress.target_time_ms:.0f} ms"
+    )
+
+
+def normalize_word(word: str) -> str:
+    return word.lower().strip(".,;:!?¡¿\"'()")
+
+
+def eligible_words(
+    active_letters: str,
+    focus: str | None,
+) -> tuple[list[str], list[str]]:
+    allowed = set(active_letters)
+    eligible = [
+        word
+        for raw in WORDS
+        if (word := normalize_word(raw))
+        and len(word) > 1
+        and set(word) <= allowed
+    ]
+    focused = [word for word in eligible if focus is None or focus in word]
+    return eligible, focused
+
+
+def pseudo_word(
+    active_letters: str,
+    focus: str | None,
+    rng: random.Random,
+) -> str:
+    vowels = [letter for letter in active_letters if letter in "aeiouáéíóú"]
+    consonants = [
+        letter for letter in active_letters if letter not in "aeiouáéíóú"
+    ]
+    if not vowels or not consonants:
+        pool = list(active_letters)
+        word = "".join(rng.choice(pool) for _ in range(rng.randint(3, 6)))
+    else:
+        size = rng.randint(2, 3)
+        word = "".join(
+            rng.choice(consonants) + rng.choice(vowels) for _ in range(size)
+        )
+    if focus is not None and focus not in word:
+        position = rng.randrange(len(word) + 1)
+        word = word[:position] + focus + word[position:]
+    return word
+
+
+def build_word_pool(
+    active_letters: str,
+    focus: str | None,
+    rng: random.Random,
+    minimum: int = MIN_WORD_POOL,
+) -> list[str]:
+    _, focused = eligible_words(active_letters, focus)
+    pool = focused[:MAX_FREQUENT_WORDS]
+    attempts = 0
+    while len(pool) < minimum and attempts < minimum * 100:
+        word = pseudo_word(active_letters, focus, rng)
+        if word not in pool:
+            pool.append(word)
+        attempts += 1
+    while len(pool) < minimum:
+        pool.append(pseudo_word(active_letters, focus, rng))
+    return pool
+
+
+def generate_lesson(
+    progress: Progress,
+    rng: random.Random | None = None,
+    target_length: int = LESSON_LENGTH,
+) -> str:
+    rng = rng or random.Random()
+    active = progress.active_letters
+    focus = progress.weakest_letter()
+    pool = build_word_pool(active, focus, rng)
+    result: list[str] = []
+    length = 0
+
+    while length < target_length:
+        word = rng.choice(pool)
+        if result and result[-1] == word:
+            continue
+        result.append(word)
+        length += len(word) + (1 if len(result) > 1 else 0)
+    return " ".join(result)
+
+
+def wrap_ranges(text: str, width: int) -> Iterable[tuple[int, int]]:
+    start = 0
+    while start < len(text):
+        end = min(start + width, len(text))
+        if end < len(text):
+            space = text.rfind(" ", start, end + 1)
+            if space > start:
+                end = space
+        yield start, end
+        start = end + 1 if end < len(text) and text[end] == " " else end
+
+
+@dataclass
+class LessonSample:
+    hits: int = 0
+    misses: int = 0
+    total_time_ms: float = 0.0
+    timed_hits: int = 0
+
+
+class Session:
+    def __init__(self, progress: Progress, text: str) -> None:
+        self.progress = progress
+        self.text = text
+        self.focus = progress.weakest_letter()
+        self.letter_samples: dict[str, LessonSample] = {}
+        self.committed = False
+        self.typed: list[str] = []
+        self.correct = 0
+        self.attempts = 0
+        self.mistake = False
+        self.error_positions: set[int] = set()
+        self.started_at: float | None = None
+        self.last_key_at: float | None = None
+
+    @property
+    def complete(self) -> bool:
+        return len(self.typed) >= len(self.text)
+
+    @property
+    def accuracy(self) -> float:
+        return self.correct / self.attempts if self.attempts else 1.0
+
+    @property
+    def wpm(self) -> float:
+        if self.started_at is None or not self.typed:
+            return 0.0
+        elapsed = max(time.monotonic() - self.started_at, 0.001)
+        return (len(self.typed) / 5) / (elapsed / 60)
+
+    def add(self, character: str, now: float | None = None) -> None:
+        if self.complete:
+            return
+        now = now if now is not None else time.monotonic()
+        if self.started_at is None:
+            self.started_at = now
+        expected = self.text[len(self.typed)]
+        correct = character == expected
+        elapsed_ms = (
+            (now - self.last_key_at) * 1000 if self.last_key_at is not None else None
+        )
+        self.attempts += 1
+        is_trigger = not self.typed
+        if correct and not is_trigger and expected in LETTER_ORDER:
+            sample = self.letter_samples.setdefault(expected, LessonSample())
+            sample.hits += 1
+            if self.mistake:
+                sample.misses += 1
+            if (
+                not self.mistake
+                and elapsed_ms is not None
+                and elapsed_ms > 0
+            ):
+                sample.total_time_ms += elapsed_ms
+                sample.timed_hits += 1
+        if correct:
+            self.typed.append(character)
+            self.correct += 1
+            self.mistake = False
+        else:
+            self.mistake = True
+            self.error_positions.add(len(self.typed))
+        self.last_key_at = now
+
+    def commit(self) -> None:
+        if not self.complete or self.committed:
+            return
+        for letter, sample in self.letter_samples.items():
+            average = None
+            if sample.timed_hits:
+                lesson_average = math.floor(
+                    sample.total_time_ms / sample.timed_hits + 0.5
+                )
+                if 40 <= lesson_average <= 12_000:
+                    average = lesson_average
+            self.progress.stat(letter).append_lesson(
+                sample.hits,
+                sample.misses,
+                average,
+            )
+        self.committed = True
+
+    def reset(self) -> None:
+        self.typed.clear()
+        self.correct = 0
+        self.attempts = 0
+        self.mistake = False
+        self.error_positions.clear()
+        self.letter_samples.clear()
+        self.committed = False
+        self.started_at = None
+        self.last_key_at = None
+
+
+def book_expected_positions(text: str, level: int) -> tuple[tuple[int, str], ...]:
+    level = max(0, min(level, len(BOOK_LEVELS) - 1))
+    complete_text = level == len(BOOK_LEVELS) - 1
+    punctuation = "".join(characters for _, characters in BOOK_LEVELS[1 : level + 1])
+    expected: list[tuple[int, str]] = []
+    index = 0
+    while index < len(text):
+        character = text[index]
+        if character in "\r\n":
+            while index + 1 < len(text) and text[index + 1] in "\r\n":
+                index += 1
+            expected.append((index, "\n" if complete_text else " "))
+            index += 1
+            continue
+        if complete_text and character.isprintable():
+            expected.append((index, character))
+        elif character.isalpha():
+            expected_character = character.lower()
+            if level == 0:
+                expected_character = expected_character.translate(UNTILDED_TRANSLATION)
+            expected.append((index, expected_character))
+        elif character == " " or character in punctuation:
+            expected.append((index, character))
+        index += 1
+    return tuple(expected)
+
+
+class BookSession:
+    def __init__(self, text: str, level: int) -> None:
+        self.text = text
+        self.level = level
+        self.expected = book_expected_positions(text, level)
+        self.cursor = 0
+        self.correct = 0
+        self.attempts = 0
+        self.mistake = False
+        self.error_positions: set[int] = set()
+        self.started_at: float | None = None
+
+    @property
+    def complete(self) -> bool:
+        return self.cursor >= len(self.expected)
+
+    @property
+    def source_position(self) -> int:
+        return self.expected[self.cursor][0] if not self.complete else len(self.text)
+
+    @property
+    def accuracy(self) -> float:
+        return self.correct / self.attempts if self.attempts else 1.0
+
+    @property
+    def wpm(self) -> float:
+        if self.started_at is None or not self.cursor:
+            return 0.0
+        elapsed = max(time.monotonic() - self.started_at, 0.001)
+        return (self.cursor / 5) / (elapsed / 60)
+
+    def add(self, character: str, now: float | None = None) -> None:
+        if self.complete:
+            return
+        now = now if now is not None else time.monotonic()
+        if self.started_at is None:
+            self.started_at = now
+        source_index, expected = self.expected[self.cursor]
+        self.attempts += 1
+        if character == expected:
+            self.cursor += 1
+            self.correct += 1
+            self.mistake = False
+        else:
+            self.mistake = True
+            self.error_positions.add(source_index)
+
+    def reset(self) -> None:
+        self.cursor = 0
+        self.correct = 0
+        self.attempts = 0
+        self.mistake = False
+        self.error_positions.clear()
+        self.started_at = None
+
+
+def book_level_feedback(progress: Progress) -> str:
+    label = BOOK_LEVELS[progress.book_level][0]
+    if progress.book_level == len(BOOK_LEVELS) - 1:
+        return f"Nivel: {label}"
+    accuracy = (
+        progress.book_level_correct / progress.book_level_attempts
+        if progress.book_level_attempts
+        else 1.0
+    )
+    return (
+        f"Nivel: {label} · {progress.book_level_attempts}/{BOOK_LEVEL_MIN_ATTEMPTS} "
+        f"pulsaciones · {accuracy:.0%}/{BOOK_LEVEL_ACCURACY:.0%}"
+    )
+
+
+def record_book_session(progress: Progress, session: BookSession) -> str | None:
+    progress.book_level_attempts += session.attempts
+    progress.book_level_correct += session.correct
+    if progress.book_level >= len(BOOK_LEVELS) - 1:
+        return None
+    accuracy = progress.book_level_correct / max(progress.book_level_attempts, 1)
+    if (
+        progress.book_level_attempts >= BOOK_LEVEL_MIN_ATTEMPTS
+        and accuracy >= BOOK_LEVEL_ACCURACY
+    ):
+        progress.book_level += 1
+        progress.book_level_attempts = 0
+        progress.book_level_correct = 0
+        return BOOK_LEVELS[progress.book_level][0]
+    return None
+
+
+def advance_book_position(
+    progress: Progress,
+    book: Book,
+    next_offset: int | None = None,
+) -> bool:
+    position = progress.book_position(book.slug)
+    if next_offset is not None:
+        section_text = book_section_text(book.sections[position.section])
+        if next_offset < len(section_text):
+            position.chunk = 0
+            position.offset = next_offset
+            return False
+        position.chunk = 0
+        position.offset = 0
+        position.section += 1
+        if position.section >= len(book.sections):
+            position.section = len(book.sections) - 1
+            position.offset = len(book_section_text(book.sections[-1]))
+            position.completed = True
+            return True
+        return False
+    position.offset = 0
+    position.chunk += 1
+    if position.chunk >= len(book.sections[position.section].chunks):
+        position.section += 1
+        position.chunk = 0
+    if position.section >= len(book.sections):
+        position.section = len(book.sections) - 1
+        position.chunk = len(book.sections[-1].chunks) - 1
+        position.offset = len(book.sections[-1].chunks[-1])
+        position.completed = True
+        return True
+    return False
+
+
+def current_book_chunk(progress: Progress, book: Book) -> tuple[BookPosition, str]:
+    position = progress.book_position(book.slug)
+    if position.revision != book.revision:
+        position.section = 0
+        position.chunk = 0
+        position.completed = False
+        position.revision = book.revision
+        position.offset = 0
+    if position.section >= len(book.sections):
+        position.section = len(book.sections) - 1
+        position.chunk = 0
+    section = book.sections[position.section]
+    if position.chunk >= len(section.chunks):
+        position.chunk = 0
+        position.offset = 0
+    return position, section.chunks[position.chunk]
+
+
+@lru_cache(maxsize=64)
+def book_section_text(section: BookSection) -> str:
+    return " ".join(section.chunks)
+
+
+def current_book_text(progress: Progress, book: Book) -> tuple[BookPosition, str]:
+    position, _ = current_book_chunk(progress, book)
+    section = book.sections[position.section]
+    if position.chunk:
+        position.offset += sum(
+            len(chunk) + 1 for chunk in section.chunks[: position.chunk]
+        )
+        position.chunk = 0
+    text = book_section_text(section)
+    if position.offset > len(text):
+        position.offset = 0
+    return position, text
+
+
+class Theme:
+    NORMAL = 0
+    ACCENT = 1
+    CORRECT = 2
+    ERROR = 3
+    MUTED = 4
+    WARNING = 5
+    CURRENT = 6
+    CURRENT_ERROR = 7
+    BAR_EMPTY = 8
+    BAR_0 = 9
+    BAR_1 = 10
+    BAR_2 = 11
+    KEYBOARD_PINKY = 12
+    KEYBOARD_RING = 13
+    KEYBOARD_MIDDLE = 14
+    KEYBOARD_INDEX = 15
+    KEYBOARD_FINGER_THEMES = (
+        KEYBOARD_PINKY,
+        KEYBOARD_RING,
+        KEYBOARD_MIDDLE,
+        KEYBOARD_INDEX,
+    )
+    KEYBOARD_LOCKED_PINKY = 16
+    KEYBOARD_LOCKED_RING = 17
+    KEYBOARD_LOCKED_MIDDLE = 18
+    KEYBOARD_LOCKED_INDEX = 19
+    KEYBOARD_LOCKED_THEMES = (
+        KEYBOARD_LOCKED_PINKY,
+        KEYBOARD_LOCKED_RING,
+        KEYBOARD_LOCKED_MIDDLE,
+        KEYBOARD_LOCKED_INDEX,
+    )
+
+    @classmethod
+    def initialize(cls) -> None:
+        if not curses.has_colors():
+            return
+        try:
+            curses.use_default_colors()
+        except curses.error:
+            pass
+        keyboard_backgrounds = (
+            KEYBOARD_256_BACKGROUNDS
+            if curses.COLORS >= 256
+            else (
+                curses.COLOR_MAGENTA,
+                curses.COLOR_BLUE,
+                curses.COLOR_GREEN,
+                curses.COLOR_YELLOW,
+            )
+        )
+        keyboard_foregrounds = (curses.COLOR_WHITE,) * len(KEYBOARD_FINGER_GROUPS)
+        keyboard_locked_foregrounds = (curses.COLOR_WHITE,) * len(KEYBOARD_FINGER_GROUPS)
+        if curses.COLORS >= 256:
+            # Use dark shades of the terminal's accent families for readability.
+            if curses.can_change_color():
+                curses.init_color(
+                    ERROR_COLOR,
+                    *((channel * 1000 + 254) // 255 for channel in ERROR_RGB),
+                )
+                for offset, rgb in enumerate(BAR_RGBS):
+                    curses.init_color(
+                        BAR_COLOR_BASE + offset,
+                        *((channel * 1000 + 254) // 255 for channel in rgb),
+                    )
+                keyboard_backgrounds = tuple(
+                    KEYBOARD_COLOR_BASE + offset
+                    for offset in range(len(KEYBOARD_RGBS))
+                )
+                for offset, rgb in enumerate(KEYBOARD_RGBS):
+                    curses.init_color(
+                        KEYBOARD_COLOR_BASE + offset,
+                        *((channel * 1000 + 254) // 255 for channel in rgb),
+                    )
+            colors = {
+                cls.ACCENT: (curses.COLOR_CYAN, -1),
+                cls.CORRECT: (curses.COLOR_GREEN, -1),
+                cls.ERROR: (ERROR_COLOR, -1),
+                cls.MUTED: (curses.COLOR_WHITE, -1),
+                cls.WARNING: (curses.COLOR_YELLOW, -1),
+                cls.CURRENT: (curses.COLOR_CYAN, CURRENT_BACKGROUND),
+                cls.CURRENT_ERROR: (ERROR_COLOR, CURRENT_BACKGROUND),
+                cls.BAR_EMPTY: (curses.COLOR_WHITE, -1),
+                cls.BAR_0: (BAR_COLOR_BASE, -1),
+                cls.BAR_1: (BAR_COLOR_BASE + 1, -1),
+                cls.BAR_2: (BAR_COLOR_BASE + 2, -1),
+            }
+        else:
+            colors = {
+                cls.ACCENT: (curses.COLOR_CYAN, -1),
+                cls.CORRECT: (curses.COLOR_GREEN, -1),
+                cls.ERROR: (curses.COLOR_RED, -1),
+                cls.MUTED: (curses.COLOR_WHITE, -1),
+                cls.WARNING: (curses.COLOR_YELLOW, -1),
+                cls.CURRENT: (curses.COLOR_CYAN, curses.COLOR_BLACK),
+                cls.CURRENT_ERROR: (curses.COLOR_RED, curses.COLOR_BLACK),
+                cls.BAR_EMPTY: (curses.COLOR_WHITE, -1),
+                cls.BAR_0: (curses.COLOR_WHITE, -1),
+                cls.BAR_1: (curses.COLOR_CYAN, -1),
+                cls.BAR_2: (curses.COLOR_CYAN, -1),
+            }
+        for finger, background in enumerate(keyboard_backgrounds):
+            colors[cls.KEYBOARD_FINGER_THEMES[finger]] = (
+                keyboard_foregrounds[finger],
+                background,
+            )
+            colors[cls.KEYBOARD_LOCKED_THEMES[finger]] = (
+                keyboard_locked_foregrounds[finger],
+                background,
+            )
+        for pair, (foreground, background) in colors.items():
+            try:
+                curses.init_pair(pair, foreground, background)
+            except curses.error:
+                curses.init_pair(pair, foreground, curses.COLOR_BLACK)
+
+
+def attr(pair: int, extra: int = 0) -> int:
+    return (curses.color_pair(pair) if curses.has_colors() else 0) | extra
+
+
+def safe_addstr(window: curses.window, y: int, x: int, text: str, style: int = 0) -> None:
+    height, width = window.getmaxyx()
+    if 0 <= y < height and x < width and text:
+        try:
+            window.addnstr(y, max(0, x), text[max(0, -x) :], max(0, width - max(0, x) - 1), style)
+        except curses.error:
+            pass
+
+
+def centered_text_y(height: int, line_count: int) -> int:
+    return max(4, (height - line_count) // 2)
+
+
+def practice_text_width(terminal_width: int) -> int:
+    return min(72, terminal_width - 8)
+
+
+def book_text_width(_terminal_width: int) -> int:
+    return min(BOOK_LINE_WIDTH, _terminal_width - 8)
+
+
+def cycle_option(
+    mode: str,
+    word_package: str,
+    book: str,
+    option: str,
+    direction: int,
+) -> tuple[str, str, str]:
+    if option == "mode":
+        mode = MODES[(MODES.index(mode) + direction) % len(MODES)]
+    elif mode == "practice":
+        packages = tuple(WORD_PACKAGES)
+        word_package = packages[
+            (packages.index(word_package) + direction) % len(packages)
+        ]
+    else:
+        books = tuple(BOOK_PATHS)
+        book = books[(books.index(book) + direction) % len(books)]
+    return mode, word_package, book
+
+
+def change_target_wpm(target_wpm: int, direction: int) -> int:
+    return max(
+        MIN_TARGET_WPM,
+        min(MAX_TARGET_WPM, target_wpm + direction * TARGET_WPM_STEP),
+    )
+
+
+def keyboard_focus_keys(focus: str | None) -> set[str]:
+    keys = {focus} if focus else set()
+    keys.update(
+        {
+            {"á": "a", "é": "e", "í": "i", "ó": "o", "ú": "u"}.get(
+                focus,
+                "",
+            ),
+            "´" if focus in {"á", "é", "í", "ó", "ú"} else "",
+        }
+        - {""}
+    )
+    return keys
+
+
+def draw_keyboard_layout(
+    stdscr: curses.window,
+    progress: Progress,
+    focus: str | None,
+    start_y: int,
+) -> None:
+    _, width = stdscr.getmaxyx()
+    active_letters = set(progress.active_letters)
+    display_focus_keys = keyboard_focus_keys(focus)
+    keyboard_width = len(KEYBOARD_ROWS[0]) * 3 + KEYBOARD_HAND_GAP
+    keyboard_x = (width - keyboard_width) // 2
+    for row_index, (row, indent) in enumerate(
+        zip(KEYBOARD_ROWS, (0, 1, 2))
+    ):
+        for index, letter in enumerate(row):
+            unlocked = not letter.isalpha() or letter in active_letters
+            if letter in display_focus_keys:
+                extra = curses.A_BOLD
+                unlocked = True
+            elif not unlocked:
+                extra = curses.A_DIM
+            else:
+                extra = curses.A_BOLD
+            finger = KEYBOARD_FINGER_BY_KEY[letter]
+            theme = (
+                Theme.KEYBOARD_FINGER_THEMES[finger]
+                if unlocked
+                else Theme.KEYBOARD_LOCKED_THEMES[finger]
+            )
+            label = f"[{letter}]" if letter in display_focus_keys else f" {letter} "
+            safe_addstr(
+                stdscr,
+                start_y + row_index,
+                keyboard_x
+                + indent
+                + index * 3
+                + (KEYBOARD_HAND_GAP if index >= 5 else 0),
+                label,
+                attr(theme, extra),
+            )
+
+
+def choose_options(
+    stdscr: curses.window,
+    progress: Progress,
+) -> tuple[str, str, str, int, str]:
+    mode = progress.mode
+    word_package = progress.word_package
+    book = progress.selected_book
+    target_wpm = progress.target_wpm
+    keyboard_view = (
+        progress.keyboard_view
+        if progress.keyboard_view in KEYBOARD_VIEWS
+        else DEFAULT_KEYBOARD_VIEW
+    )
+    selected = 0
+    while True:
+        rows = (
+            ("mode", "source", "target", "keyboard")
+            if mode == "practice"
+            else ("mode", "source")
+        )
+        selected = min(selected, len(rows) - 1)
+        stdscr.erase()
+        height, width = stdscr.getmaxyx()
+        if height < 10 or width < 42:
+            message = "Terminal demasiado pequeña (mínimo 42x10)"
+            safe_addstr(
+                stdscr,
+                height // 2,
+                max(0, (width - len(message)) // 2),
+                message,
+                attr(Theme.WARNING, curses.A_BOLD),
+            )
+        else:
+            safe_addstr(
+                stdscr,
+                2,
+                4,
+                "Opciones",
+                attr(Theme.ACCENT, curses.A_BOLD),
+            )
+            values = [
+                ("Modo", MODE_LABELS[mode]),
+                (
+                    "Fuente",
+                    WORD_PACKAGE_LABELS[word_package]
+                    if mode == "practice"
+                    else BOOK_LABELS[book],
+                ),
+            ]
+            if mode == "practice":
+                values.append(("Objetivo", f"{target_wpm} ppm"))
+                values.append(("Ver teclado", KEYBOARD_VIEW_LABELS[keyboard_view]))
+            row_step = 1 if height < 13 else 2
+            start_y = max(4, min((height - len(rows) * row_step) // 2, height - 6))
+            for index, (label, value) in enumerate(values):
+                is_selected = index == selected
+                marker = "›" if is_selected else " "
+                style = attr(
+                    Theme.ACCENT if is_selected else Theme.MUTED,
+                    curses.A_BOLD if is_selected else 0,
+                )
+                safe_addstr(
+                    stdscr,
+                    start_y + index * row_step,
+                    6,
+                    f"{marker} {label:<12} {value}",
+                    style,
+                )
+            help_text = "↑↓ elegir · ←→ cambiar · Enter aplicar · Esc cancelar"
+            safe_addstr(
+                stdscr,
+                height - 2,
+                max(3, (width - len(help_text)) // 2),
+                help_text,
+                attr(Theme.MUTED, curses.A_DIM),
+            )
+        stdscr.refresh()
+        key = stdscr.get_wch()
+        if key == "\x03":
+            raise KeyboardInterrupt
+        if key == "\x1b":
+            return (
+                progress.mode,
+                progress.word_package,
+                progress.selected_book,
+                progress.target_wpm,
+                progress.keyboard_view,
+            )
+        if key in (curses.KEY_UP, "k"):
+            selected = (selected - 1) % len(rows)
+        elif key in (curses.KEY_DOWN, "j"):
+            selected = (selected + 1) % len(rows)
+        elif key in (curses.KEY_LEFT, curses.KEY_RIGHT, "h", "l", " "):
+            direction = -1 if key in (curses.KEY_LEFT, "h") else 1
+            if rows[selected] == "target":
+                target_wpm = change_target_wpm(target_wpm, direction)
+            elif rows[selected] == "keyboard":
+                keyboard_view = KEYBOARD_VIEWS[
+                    (KEYBOARD_VIEWS.index(keyboard_view) + direction)
+                    % len(KEYBOARD_VIEWS)
+                ]
+            else:
+                mode, word_package, book = cycle_option(
+                    mode,
+                    word_package,
+                    book,
+                    rows[selected],
+                    direction,
+                )
+        elif key in ("\n", "\r", curses.KEY_ENTER):
+            return mode, word_package, book, target_wpm, keyboard_view
+
+
+def draw(
+    stdscr: curses.window,
+    session: Session,
+    notice: str = "",
+) -> None:
+    stdscr.erase()
+    height, width = stdscr.getmaxyx()
+    if height < 10 or width < 42:
+        message = "Terminal demasiado pequeña (mínimo 42x10)"
+        safe_addstr(stdscr, height // 2, max(0, (width - len(message)) // 2), message, attr(Theme.WARNING, curses.A_BOLD))
+        stdscr.refresh()
+        return
+
+    progress = session.progress
+    focus = session.focus
+    if progress.keyboard_view == "keyboard":
+        panel_y = height - 4
+        draw_keyboard_layout(stdscr, progress, focus, panel_y)
+    else:
+        panel_y = height - 3
+        spaced_letters = " ".join(
+            f"[{letter}]" if letter == focus else letter
+            for letter in progress.active_letters
+        )
+        compact_letters = "".join(
+            f"[{letter}]" if letter == focus else letter
+            for letter in progress.active_letters
+        )
+        available = width - 6
+        letters = spaced_letters if len(spaced_letters) <= available else compact_letters
+        safe_addstr(stdscr, panel_y, 3, letters, attr(Theme.MUTED, curses.A_DIM))
+        safe_addstr(
+            stdscr,
+            panel_y + 1,
+            3,
+            "─" * max(1, width - 6),
+            attr(Theme.MUTED, curses.A_DIM),
+        )
+
+    text_width = practice_text_width(width)
+    ranges = list(wrap_ranges(session.text, text_width))
+    content_height = max(1, panel_y - 2)
+    start_y = 1 + max(0, (content_height - len(ranges)) // 2)
+    typed_count = len(session.typed)
+
+    for row, (start, end) in enumerate(ranges):
+        x = max(4, (width - (end - start)) // 2)
+        for index in range(start, end):
+            character = session.text[index]
+            if index < typed_count:
+                theme = Theme.ERROR if index in session.error_positions else Theme.CORRECT
+                extra = curses.A_BOLD
+                if index in session.error_positions:
+                    extra |= curses.A_UNDERLINE
+                style = attr(theme, extra)
+                shown = character
+            elif index == typed_count and session.mistake:
+                style = attr(Theme.CURRENT_ERROR, curses.A_BOLD)
+                shown = character
+            elif index == typed_count:
+                style = attr(Theme.CURRENT, curses.A_BOLD)
+                shown = character
+            else:
+                style = attr(Theme.MUTED)
+                shown = character
+            safe_addstr(stdscr, start_y + row, x + index - start, shown, style)
+
+    if notice:
+        safe_addstr(
+            stdscr,
+            height - 1,
+            3,
+            notice[: max(0, width - 6)],
+            attr(Theme.WARNING, curses.A_BOLD),
+        )
+    stdscr.refresh()
+
+
+def wrap_book_ranges(text: str, width: int) -> list[tuple[int, int]]:
+    ranges: list[tuple[int, int]] = []
+    start = 0
+    while start < len(text):
+        if text[start] in "\r\n":
+            start += 1
+            continue
+        paragraph_end = start
+        while paragraph_end < len(text) and text[paragraph_end] not in "\r\n":
+            paragraph_end += 1
+        end = min(start + width, paragraph_end)
+        if end < paragraph_end:
+            space = text.rfind(" ", start + 1, end + 1)
+            if space > start:
+                end = space + 1
+        ranges.append((start, end))
+        start = end
+    return ranges
+
+
+def book_exercise(text: str, offset: int, width: int) -> tuple[str, int]:
+    offset = max(0, min(offset, len(text)))
+    boundaries = book_exercise_boundaries(text, width)
+    completed = bisect_right(boundaries, offset)
+    end = boundaries[completed] if completed < len(boundaries) else len(text)
+    return text[offset:end].rstrip(), end
+
+
+@lru_cache(maxsize=64)
+def book_exercise_boundaries(text: str, width: int) -> tuple[int, ...]:
+    boundaries: list[int] = []
+    start = 0
+    minimum = width * 2
+    sentence_end = re.compile(r"[.!?…]+[»”\"']?(?=\s|$)")
+    for match in sentence_end.finditer(text):
+        end = match.end()
+        while end < len(text) and text[end].isspace():
+            end += 1
+        if end - start >= minimum:
+            boundaries.append(end)
+            start = end
+    if start < len(text):
+        boundaries.append(len(text))
+    return tuple(boundaries)
+
+
+def book_exercise_count(text: str, width: int, stop: int | None = None) -> int:
+    boundaries = book_exercise_boundaries(text, width)
+    if stop is None:
+        return len(boundaries)
+    return bisect_right(boundaries, max(0, min(stop, len(text))))
+
+
+def current_book_exercise(
+    progress: Progress,
+    book: Book,
+    width: int,
+) -> tuple[BookPosition, str, int, int, int]:
+    position, section_text = current_book_text(progress, book)
+    boundaries = book_exercise_boundaries(section_text, width)
+    if position.offset and position.offset not in boundaries:
+        previous = bisect_right(boundaries, position.offset) - 1
+        position.offset = boundaries[previous] if previous >= 0 else 0
+    completed = bisect_right(boundaries, position.offset)
+    current = min(completed + 1, max(1, len(boundaries)))
+    next_offset = boundaries[current - 1] if boundaries else len(section_text)
+    text = section_text[position.offset:next_offset].rstrip()
+    total = len(boundaries)
+    return position, text, next_offset, current, total
+
+
+def visible_book_ranges(
+    text: str,
+    width: int,
+    source_position: int,
+) -> list[tuple[int, int]]:
+    ranges = wrap_book_ranges(text, width)
+    active_row = next(
+        (
+            row
+            for row, (start, end) in enumerate(ranges)
+            if start <= source_position < end
+        ),
+        next(
+            (
+                row
+                for row, (start, _) in enumerate(ranges)
+                if start > source_position
+            ),
+            max(0, len(ranges) - 1),
+        ),
+    )
+    first_row = max(0, min(active_row - 1, len(ranges) - 2))
+    return ranges[first_row : first_row + 2]
+
+
+def book_completion(progress: Progress, book: Book) -> float:
+    position = progress.book_position(book.slug)
+    if position.completed:
+        return 1.0
+    total = sum(len(book_section_text(section)) for section in book.sections)
+    completed = sum(
+        len(book_section_text(section))
+        for section in book.sections[: position.section]
+    ) + position.offset
+    return completed / total
+
+
+def draw_book(
+    stdscr: curses.window,
+    progress: Progress,
+    book: Book,
+    session: BookSession,
+    notice: str = "",
+    fragment_info: tuple[int, int, int] | None = None,
+) -> None:
+    stdscr.erase()
+    height, width = stdscr.getmaxyx()
+    if height < 10 or width < 42:
+        message = "Terminal demasiado pequeña (mínimo 42x10)"
+        safe_addstr(
+            stdscr,
+            height // 2,
+            max(0, (width - len(message)) // 2),
+            message,
+            attr(Theme.WARNING, curses.A_BOLD),
+        )
+        stdscr.refresh()
+        return
+
+    position = progress.book_position(book.slug)
+    section_index, fragment_index, fragment_total = fragment_info or (
+        position.section,
+        position.chunk + 1,
+        len(book.sections[position.section].chunks),
+    )
+    section = book.sections[section_index]
+    metrics = f"{session.wpm:>3.0f} ppm  {session.accuracy:>4.0%}  {book_completion(progress, book):>4.0%}"
+    safe_addstr(stdscr, 1, 3, book.title, attr(Theme.ACCENT, curses.A_BOLD))
+    safe_addstr(stdscr, 1, width - len(metrics) - 3, metrics, curses.A_BOLD)
+    section_label = f"{section.title} · fragmento {fragment_index}/{fragment_total}"
+    safe_addstr(stdscr, 2, 3, section_label, attr(Theme.MUTED, curses.A_DIM))
+    safe_addstr(stdscr, 3, 3, "─" * max(1, width - 6), attr(Theme.MUTED, curses.A_DIM))
+
+    text_width = book_text_width(width)
+    source_position = session.source_position
+    shown_ranges = visible_book_ranges(session.text, text_width, source_position)
+    required = {source for source, _ in session.expected}
+    completed = {source for source, _ in session.expected[: session.cursor]}
+    start_y = centered_text_y(height, len(shown_ranges)) + 1
+
+    for row, (start, end) in enumerate(shown_ranges, start=start_y):
+        line = session.text[start:end]
+        x = max(4, (width - len(line)) // 2)
+        for index in range(start, end):
+            character = session.text[index]
+            if index in completed:
+                theme = Theme.ERROR if index in session.error_positions else Theme.CORRECT
+                extra = curses.A_BOLD
+                if index in session.error_positions:
+                    extra |= curses.A_UNDERLINE
+                style = attr(theme, extra)
+            elif index == source_position and session.mistake:
+                style = attr(Theme.CURRENT_ERROR, curses.A_BOLD)
+            elif index == source_position:
+                style = attr(Theme.CURRENT, curses.A_BOLD)
+            elif index not in required:
+                style = attr(Theme.MUTED, curses.A_DIM)
+            else:
+                style = attr(Theme.MUTED)
+            safe_addstr(stdscr, row, x + index - start, character, style)
+
+    stats = book_level_feedback(progress)
+    if notice:
+        safe_addstr(
+            stdscr,
+            height - 2,
+            3,
+            notice[: max(0, width - 8)],
+            attr(Theme.WARNING, curses.A_BOLD),
+        )
+    safe_addstr(
+        stdscr,
+        height - 1,
+        3,
+        stats,
+        attr(Theme.MUTED),
+    )
+    stdscr.refresh()
+
+
+def apply_options(stdscr: curses.window, progress: Progress) -> bool:
+    previous = (
+        progress.mode,
+        progress.word_package,
+        progress.selected_book,
+        progress.target_wpm,
+        progress.keyboard_view,
+    )
+    mode, word_package, book, target_wpm, keyboard_view = choose_options(stdscr, progress)
+    changed = (mode, word_package, book, target_wpm, keyboard_view) != previous
+    if not changed:
+        return False
+    progress.mode = mode
+    progress.word_package = word_package
+    progress.selected_book = book
+    progress.target_wpm = target_wpm
+    progress.keyboard_view = keyboard_view
+    if word_package != previous[1]:
+        select_word_package(word_package)
+    save_progress(progress)
+    return True
+
+
+def result_fraction(actual_time_ms: float | None, target_time_ms: float) -> float:
+    if actual_time_ms and actual_time_ms > 0 and target_time_ms > 0:
+        return min(1.0, max(0.0, target_time_ms / actual_time_ms))
+    return 0.0
+
+
+def bar_for(fraction: float, length: int) -> str:
+    length = max(1, length)
+    fraction = min(1.0, max(0.0, fraction))
+    filled = round(fraction * length * 8)
+    remaining = filled
+    cells: list[str] = []
+    for _ in range(length):
+        if remaining >= 8:
+            cells.append("█")
+            remaining -= 8
+        elif remaining > 0:
+            cells.append(PARTIAL_BLOCKS[remaining - 1])
+            remaining = 0
+        else:
+            cells.append("░")
+    return "".join(cells)
+
+
+def draw_result(
+    stdscr: curses.window,
+    session: Session,
+    progress: Progress,
+    unlocked: list[str],
+    hi_score: bool,
+    ticks: int,
+) -> None:
+    stdscr.erase()
+    height, width = stdscr.getmaxyx()
+    if height < 10 or width < 42:
+        message = "Terminal demasiado pequeña (mínimo 42x10)"
+        safe_addstr(
+            stdscr,
+            height // 2,
+            max(0, (width - len(message)) // 2),
+            message,
+            attr(Theme.WARNING, curses.A_BOLD),
+        )
+        stdscr.refresh()
+        return
+
+    target = progress.target_time_ms
+    focus = session.focus
+    start_y = max(2, (height - 9) // 2)
+
+    title: str | None = None
+    blink = False
+    if unlocked:
+        title = "· LETTER UNLOCKED ·"
+        blink = True
+    elif hi_score:
+        title = "· NEW RECORD ·"
+        blink = True
+    elif focus is None:
+        title = "· ALFABETO COMPLETO ·"
+
+    if focus is None:
+        current_ms = 0
+        best_ms = 0
+    else:
+        stat = progress.stat(focus)
+        current_ms = round(stat.time_ms or 0)
+        best_ms = round(stat.best_time_ms or 0)
+
+    elapsed_ms = ticks * RESULT_FRAME_MS
+    animated_current_ms = min(current_ms, elapsed_ms // RESULT_COUNT_MS_PER_UNIT)
+    animated_best_ms = min(best_ms, elapsed_ms // RESULT_COUNT_MS_PER_UNIT)
+    animated_target_ms = min(round(target), elapsed_ms // RESULT_COUNT_MS_PER_UNIT)
+
+    if focus is not None:
+        safe_addstr(
+            stdscr,
+            start_y,
+            max(0, (width - 3) // 2),
+            f"[{focus}]",
+            attr(Theme.ACCENT, curses.A_BOLD),
+        )
+
+    labels = ("CURRENT", "BEST", "TARGET")
+    values = (
+        f"{animated_current_ms:03d} ms",
+        f"{animated_best_ms:03d} ms",
+        f"{animated_target_ms:03d} ms",
+    )
+    column_width = 10
+    inner_width = column_width * len(labels) + 6
+    box_x = max(1, (width - inner_width - 2) // 2)
+    box_y = start_y + 2
+    top = "┌" + "─" * inner_width + "┐"
+    label_content = "  ".join(f"{label:^{column_width}}" for label in labels)
+    value_content = "  ".join(f"{value:^{column_width}}" for value in values)
+    bottom = "└" + "─" * inner_width + "┘"
+    safe_addstr(
+        stdscr,
+        box_y,
+        box_x,
+        top,
+        attr(Theme.MUTED),
+    )
+    for row, content, style in (
+        (box_y + 1, label_content, attr(Theme.MUTED, curses.A_DIM)),
+        (box_y + 2, value_content, attr(Theme.ACCENT, curses.A_BOLD)),
+    ):
+        safe_addstr(stdscr, row, box_x, "│", attr(Theme.MUTED))
+        safe_addstr(stdscr, row, box_x + 1, " ", attr(Theme.MUTED))
+        safe_addstr(stdscr, row, box_x + 2, content, style)
+        safe_addstr(stdscr, row, box_x + 2 + len(content), " ", attr(Theme.MUTED))
+        safe_addstr(
+            stdscr,
+            row,
+            box_x + 3 + len(content),
+            "│",
+            attr(Theme.MUTED),
+        )
+    safe_addstr(stdscr, box_y + 3, box_x, bottom, attr(Theme.MUTED))
+
+    if title is not None and (not blink or (ticks // 8) % 2 == 0):
+        safe_addstr(
+            stdscr,
+            box_y + 5,
+            max(0, (width - len(title)) // 2),
+            title,
+            attr(Theme.WARNING if blink else Theme.ACCENT, curses.A_BOLD),
+        )
+
+    stdscr.refresh()
+
+
+def run_result(
+    stdscr: curses.window,
+    session: Session,
+    progress: Progress,
+    unlocked: list[str],
+    hi_score: bool,
+) -> str:
+    try:
+        stdscr.timeout(RESULT_FRAME_MS)
+        ticks = 0
+        while True:
+            draw_result(stdscr, session, progress, unlocked, hi_score, ticks)
+            ticks += 1
+            try:
+                key = stdscr.get_wch()
+            except curses.error:
+                continue
+            if key == "\x03":
+                return "exit"
+            if key == "\x1b":
+                stdscr.timeout(-1)
+                apply_options(stdscr, progress)
+                return "next"
+            if key in ("\n", "\r", curses.KEY_ENTER):
+                return "next"
+    finally:
+        stdscr.timeout(-1)
+
+
+def run_practice_session(stdscr: curses.window, progress: Progress) -> str:
+    session = Session(progress, generate_lesson(progress))
+    previous_letters = set(progress.active_letters)
+    notice = ""
+    while not session.complete:
+        draw(stdscr, session, notice)
+        notice = ""
+        try:
+            key = stdscr.get_wch()
+        except curses.error:
+            continue
+        if key == "\x03":
+            save_progress(progress)
+            return "exit"
+        if key == "\x1b":
+            apply_options(stdscr, progress)
+            return "switch"
+        if key in ("\b", "\x7f", curses.KEY_BACKSPACE):
+            session.reset()
+            notice = "Ejercicio reiniciado"
+        elif isinstance(key, str) and key.isprintable():
+            session.add(key)
+
+    previous_best = (
+        progress.stat(session.focus).best_time_ms if session.focus else None
+    )
+    session.commit()
+    unlocked = [
+        letter for letter in progress.active_letters if letter not in previous_letters
+    ]
+    hi_score = False
+    if session.focus:
+        current_best = progress.stat(session.focus).best_time_ms
+        hi_score = (
+            previous_best is not None
+            and current_best is not None
+            and current_best < previous_best
+        )
+    save_progress(progress)
+    return run_result(stdscr, session, progress, unlocked, hi_score)
+
+
+def draw_finished_book(stdscr: curses.window, book: Book) -> None:
+    stdscr.erase()
+    height, width = stdscr.getmaxyx()
+    if height < 10 or width < 42:
+        message = "Terminal demasiado pequeña (mínimo 42x10)"
+        safe_addstr(
+            stdscr,
+            height // 2,
+            max(0, (width - len(message)) // 2),
+            message,
+            attr(Theme.WARNING, curses.A_BOLD),
+        )
+    else:
+        title = f"{book.title} completada"
+        safe_addstr(
+            stdscr,
+            height // 2 - 1,
+            max(3, (width - len(title)) // 2),
+            title,
+            attr(Theme.CORRECT, curses.A_BOLD),
+        )
+    stdscr.refresh()
+
+
+def run_finished_book(stdscr: curses.window, progress: Progress, book: Book) -> str:
+    while True:
+        draw_finished_book(stdscr, book)
+        key = stdscr.get_wch()
+        if key == "\x03":
+            return "exit"
+        if key == "\x1b":
+            apply_options(stdscr, progress)
+            return "next"
+        if key in ("r", "R"):
+            progress.books[book.slug] = BookPosition()
+            save_progress(progress)
+            return "next"
+
+
+def run_book_session(stdscr: curses.window, progress: Progress) -> str:
+    book = load_book(progress.selected_book)
+    position, _ = current_book_chunk(progress, book)
+    if position.completed:
+        return run_finished_book(stdscr, progress, book)
+    _, terminal_width = stdscr.getmaxyx()
+    position, text, next_offset, fragment_index, fragment_total = (
+        current_book_exercise(progress, book, book_text_width(terminal_width))
+    )
+    fragment_info = (position.section, fragment_index, fragment_total)
+    session = BookSession(text, progress.book_level)
+    notice = ""
+    while not session.complete:
+        draw_book(
+            stdscr,
+            progress,
+            book,
+            session,
+            notice,
+            fragment_info=fragment_info,
+        )
+        notice = ""
+        try:
+            key = stdscr.get_wch()
+        except curses.error:
+            continue
+        if key == "\x03":
+            save_progress(progress)
+            return "exit"
+        if key == "\x1b":
+            apply_options(stdscr, progress)
+            return "switch"
+        if key in ("\b", "\x7f", curses.KEY_BACKSPACE):
+            session.reset()
+            notice = "Fragmento reiniciado"
+        elif key in ("\n", "\r", curses.KEY_ENTER):
+            session.add("\n")
+        elif isinstance(key, str) and key.isprintable():
+            session.add(key)
+
+    record_book_session(progress, session)
+    advance_book_position(progress, book, next_offset)
+    save_progress(progress)
+    while True:
+        draw_book(
+            stdscr,
+            progress,
+            book,
+            session,
+            fragment_info=fragment_info,
+        )
+        key = stdscr.get_wch()
+        if key == "\x03":
+            return "exit"
+        if key == "\x1b":
+            apply_options(stdscr, progress)
+            return "next"
+        if key in ("\n", "\r", curses.KEY_ENTER):
+            return "next"
+
+
+def run(stdscr: curses.window, progress: Progress) -> None:
+    curses.curs_set(0)
+    if "ESCDELAY" not in os.environ:
+        curses.set_escdelay(DEFAULT_ESC_DELAY_MS)
+    stdscr.keypad(True)
+    Theme.initialize()
+    while True:
+        result = (
+            run_practice_session(stdscr, progress)
+            if progress.mode == "practice"
+            else run_book_session(stdscr, progress)
+        )
+        if result == "exit":
+            return
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--version", action="version", version=f"%(prog)s {VERSION}")
+    parser.add_argument(
+        "--reset",
+        action="store_true",
+        help="borra el progreso guardado antes de iniciar",
+    )
+    parser.add_argument(
+        "--words",
+        choices=WORD_PACKAGES,
+        help="cambia y guarda el paquete de palabras",
+    )
+    args = parser.parse_args()
+    locale.setlocale(locale.LC_ALL, "")
+    path = data_path()
+    if args.reset:
+        path.unlink(missing_ok=True)
+    progress = load_progress(path)
+    if args.words is not None:
+        progress.word_package = args.words
+    select_word_package(progress.word_package)
+    try:
+        curses.wrapper(run, progress)
+    except KeyboardInterrupt:
+        save_progress(progress, path)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
