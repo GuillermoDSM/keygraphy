@@ -4,20 +4,30 @@ Minimal adaptive typing practice for Linux terminals. Keygraphy focuses lessons
 on the least confident letter and adds a new one after every active letter has
 reached the target speed.
 
-By default, lessons use a 10,000-word Spanish corpus ranked from the bundled
-classical texts. Words are filtered to the currently unlocked letters. If fewer
-than 15 contain the focus letter, the remaining slots are filled with generated
-pseudowords.
+By default, lessons use a 10,000-word `es-LA` corpus ranked from contemporary
+multi-source language data. An `en-US` package is also available. Words are
+filtered to the currently unlocked letters. If fewer than 15 contain the focus
+letter, the remaining slots are filled with generated pseudowords.
 
 Per-letter speed is averaged over each completed lesson and smoothed with a
 0.1 factor. Progress uses the best smoothed speed ever reached, so a mastered
 letter does not unexpectedly replace the current focus. Accuracy is still
 recorded and displayed, but it does not block letter progression. After every
-lesson, a compact summary shows the current and best timing for the focus.
+lesson, a compact summary shows the current and best timing for the focus. Once
+the full alphabet is active, each focus is held for three lessons, half of the
+words include the slowest current letter, and the result screen shows current
+and best PPM for the selected word package.
 
-Spanish lessons use the frequency order computed from the bundled corpus. Spain
-and Latin American keyboard layouts use the same language model; the terminal
-handles the physical keyboard mapping.
+Each language uses its own frequency order. `es-LA` is currently backed by the
+general Spanish list from the source dataset because that dataset does not
+publish a separate Latin American list; `en-US` uses its general English list.
+The terminal handles the physical keyboard mapping.
+
+Select the English package directly with:
+
+```sh
+python3 keygraphy.py --words en-us
+```
 
 ## Run
 
@@ -38,7 +48,8 @@ to:
 ```
 
 Press `Esc` to open options. Choose a mode and its source: adaptive practice
-offers the bundled word corpus and an adjustable 15-150 WPM target, while book
+offers the `es-LA` and `en-US` word packages and an adjustable 15-150 WPM target,
+while book
 transcription offers bundled books. Use the up/down arrows to choose a setting,
 left/right to change it (in 5 WPM steps for the target), `Enter` to apply, and
 `Esc` to cancel. In practice,
@@ -70,6 +81,21 @@ python3 keygraphy.py --reset
 python3 -m unittest -v
 ```
 
+## Word lists
+
+The lists are generated with `wordfreq` 3.1.1 using its `large` wordlists,
+which combine multiple language sources and represent usage through 2021. The
+generated files include their source metadata and checksums. Rebuild them with:
+
+```sh
+python3 -m pip install wordfreq==3.1.1
+python3 tools/build_word_corpus.py
+```
+
+The generated data is identified by `wordfreq` as CC BY-SA 4.0 data. Keep its
+source notice when redistributing the word lists; the upstream notice is at
+<https://github.com/rspeer/wordfreq/blob/master/NOTICE.md>.
+
 ## Bundled books
 
 `data/books/` contains Spanish editions of Homer's *La Ilíada* and *La Odisea*,
@@ -80,9 +106,5 @@ download the UTF-8 sources and rebuild the canto-based typing content, run:
 python3 tools/build_book_library.py
 ```
 
-See `ATTRIBUTION.md` for source and public-domain details. To rebuild the word
-corpus after changing the bundled books, run:
-
-```sh
-python3 tools/build_word_corpus.py
-```
+Project Gutenberg's terms and trademark rules apply to those source texts:
+<https://www.gutenberg.org/policy/license.html>.

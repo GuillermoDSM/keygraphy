@@ -84,12 +84,12 @@ class ProgressTests(unittest.TestCase):
         self.assertEqual(bar[3], "░")
 
     def test_uses_bundled_corpus_frequency_order(self):
-        self.assertEqual(LETTER_ORDER, "eaosrnlidutcmpbvhqgójíéfázyúñx")
+        self.assertEqual(LETTER_ORDER, "aeoirnsctdlumpbgvfóhjízáxqéyñúkwü")
 
     def test_starts_with_six_letters_and_focuses_unsampled_letter(self):
         progress = Progress()
         self.assertEqual(progress.active_letters, LETTER_ORDER[:INITIAL_LETTERS])
-        self.assertEqual(progress.weakest_letter(), "e")
+        self.assertEqual(progress.weakest_letter(), "a")
 
     def test_includes_next_letter_when_every_active_letter_reached_target(self):
         progress = Progress()
@@ -136,6 +136,48 @@ class ProgressTests(unittest.TestCase):
         progress.letters["e"].time_ms = 500
         self.assertEqual(progress.weakest_letter(), LETTER_ORDER[INITIAL_LETTERS])
 
+    def test_completed_alphabet_focuses_the_slowest_current_letter(self):
+        progress = Progress()
+        for letter in LETTER_ORDER:
+            progress.letters[letter] = LetterStat(
+                time_ms=200,
+                best_time_ms=200,
+            )
+        slowest = LETTER_ORDER[-1]
+        progress.letters[slowest].time_ms = 500
+
+        self.assertTrue(progress.alphabet_complete)
+        self.assertEqual(progress.weakest_letter(), slowest)
+
+    def test_completed_alphabet_keeps_focus_for_three_lessons(self):
+        progress = Progress()
+        for letter in LETTER_ORDER:
+            progress.letters[letter] = LetterStat(
+                time_ms=200,
+                best_time_ms=200,
+            )
+        first = LETTER_ORDER[-1]
+        second = LETTER_ORDER[-2]
+        progress.letters[first].time_ms = 500
+        progress.letters[second].time_ms = 450
+
+        for _ in range(3):
+            self.assertEqual(progress.lesson_focus(), first)
+            progress.record_lesson_focus(first)
+        progress.letters[second].time_ms = 600
+
+        self.assertEqual(progress.lesson_focus(), second)
+
+    def test_best_wpm_is_kept_per_word_package(self):
+        progress = Progress()
+        progress.record_wpm(42)
+        progress.word_package = "en-us"
+
+        self.assertEqual(progress.best_wpm, 0.0)
+        progress.record_wpm(51)
+        progress.word_package = "es-la"
+        self.assertEqual(progress.best_wpm, 42)
+
     def test_speed_uses_lesson_smoothing_and_keeps_the_best(self):
         stat = LetterStat()
         stat.append_lesson(10, 0, 400)
@@ -167,16 +209,21 @@ class ProgressTests(unittest.TestCase):
 class LessonTests(unittest.TestCase):
     def test_corpus_has_ten_thousand_frequency_ordered_words(self):
         self.assertEqual(len(WORDS), 10_000)
-        self.assertEqual(WORDS[:5], ("de", "la", "que", "el", "los"))
+        self.assertEqual(WORDS[:5], ("de", "la", "que", "el", "en"))
 
-    def test_literature_package_is_available(self):
-        words = load_word_list(WORD_PACKAGES["literatura"])
+    def test_spanish_package_is_available(self):
+        words = load_word_list(WORD_PACKAGES["es-la"])
         self.assertEqual(len(words), 10_000)
-        self.assertEqual(words[:5], ("de", "la", "que", "el", "los"))
+        self.assertEqual(words[:5], ("de", "la", "que", "el", "en"))
+
+    def test_english_package_is_available(self):
+        words = load_word_list(WORD_PACKAGES["en-us"])
+        self.assertEqual(len(words), 10_000)
+        self.assertEqual(words[:5], ("the", "to", "and", "of", "in"))
 
     def test_filter_preserves_frequency_order(self):
         eligible, focused = eligible_words("eaosrn", "e")
-        self.assertEqual(eligible[:5], ["en", "se", "no", "es", "nos"])
+        self.assertEqual(eligible[:5], ["en", "no", "se", "es", "ser"])
         self.assertTrue(all("e" in word for word in focused))
 
     def test_small_word_pool_is_filled_with_pseudowords(self):
@@ -184,6 +231,13 @@ class LessonTests(unittest.TestCase):
         self.assertEqual(len(pool), 15)
         self.assertTrue(all(set(word) <= set("ea") for word in pool))
         self.assertTrue(all("e" in word for word in pool))
+
+    def test_completed_alphabet_pool_balances_focused_and_general_words(self):
+        pool = build_word_pool(LETTER_ORDER, "a", random.Random(2), minimum=20)
+        focused = sum("a" in word for word in pool)
+
+        self.assertGreater(focused, 0)
+        self.assertAlmostEqual(focused / len(pool), 0.5, delta=0.05)
 
     def test_lesson_uses_only_active_letters_and_spaces(self):
         progress = Progress()
@@ -235,15 +289,15 @@ class LessonTests(unittest.TestCase):
     def test_session_keeps_the_focus_used_to_generate_its_lesson(self):
         progress = Progress()
         session = Session(progress, "era")
-        self.assertEqual(session.focus, "e")
-        progress.letters["e"] = LetterStat(
+        self.assertEqual(session.focus, "a")
+        progress.letters["a"] = LetterStat(
             hits=30,
             misses=0,
             time_ms=200,
             best_time_ms=200,
         )
-        self.assertEqual(progress.weakest_letter(), "a")
-        self.assertEqual(session.focus, "e")
+        self.assertEqual(progress.weakest_letter(), "e")
+        self.assertEqual(session.focus, "a")
 
     def test_reset_discards_partial_attempt_and_statistics(self):
         progress = Progress()
@@ -522,7 +576,7 @@ class ModeSwitchTests(unittest.TestCase):
 
         rendered = [call.args[3] for call in addstr.call_args_list]
         styles = [call.args[0] for call in style.call_args_list]
-        self.assertEqual(KEYBOARD_ROWS[0], tuple("qwertyuiop´"))
+        self.assertEqual(KEYBOARD_ROWS[0], tuple("qwertyuiop´¨"))
         self.assertEqual(KEYBOARD_ROWS[1], tuple("asdfghjklñ"))
         self.assertEqual(KEYBOARD_ROWS[2], tuple("zxcvbnm,.-"))
         self.assertEqual(
@@ -737,21 +791,21 @@ class ModeSwitchTests(unittest.TestCase):
 
     def test_source_cycles_word_packages_in_practice_mode(self):
         mode, words, book = cycle_option(
-            "practice", "literatura", "la-iliada", "source", 1
+            "practice", "es-la", "la-iliada", "source", 1
         )
-        self.assertEqual((mode, words, book), ("practice", "literatura", "la-iliada"))
+        self.assertEqual((mode, words, book), ("practice", "en-us", "la-iliada"))
 
     def test_source_cycles_books_in_book_mode(self):
         mode, words, book = cycle_option(
-            "book", "literatura", "la-iliada", "source", 1
+            "book", "es-la", "la-iliada", "source", 1
         )
-        self.assertEqual((mode, words, book), ("book", "literatura", "la-odisea"))
+        self.assertEqual((mode, words, book), ("book", "es-la", "la-odisea"))
 
     def test_mode_change_preserves_each_modes_source(self):
         mode, words, book = cycle_option(
-            "practice", "literatura", "la-odisea", "mode", 1
+            "practice", "en-us", "la-odisea", "mode", 1
         )
-        self.assertEqual((mode, words, book), ("book", "literatura", "la-odisea"))
+        self.assertEqual((mode, words, book), ("book", "en-us", "la-odisea"))
 
     def test_book_and_practice_use_the_same_vertical_centering(self):
         self.assertEqual(centered_text_y(24, 2), 11)
@@ -908,6 +962,29 @@ class ResultTests(unittest.TestCase):
         session.focus = None
         self._render(session, progress, [], False, 10)
 
+    def test_result_screen_shows_wpm_after_completing_alphabet(self):
+        progress = Progress()
+        for letter in LETTER_ORDER:
+            progress.letters[letter] = LetterStat(
+                time_ms=200,
+                best_time_ms=200,
+            )
+        progress.best_wpm_by_package[progress.word_package] = 45
+        session = Session(progress, "casa")
+        session.typed = list(session.text)
+        session.started_at = 1.0
+        session.finished_at = 2.0
+        window = self._window()
+
+        with patch("keygraphy.safe_addstr") as addstr, patch(
+            "keygraphy.attr", return_value=0
+        ):
+            draw_result(window, session, progress, [], False, 100)
+
+        rendered = [call.args[3] for call in addstr.call_args_list]
+        self.assertTrue(any("ppm" in text for text in rendered))
+        self.assertTrue(any("45" in text for text in rendered))
+
     def test_escape_restores_blocking_input_before_opening_options(self):
         progress = Progress()
         session = Session(progress, "casa")
@@ -933,28 +1010,34 @@ class PersistenceTests(unittest.TestCase):
     def test_round_trip(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "stats.json"
-            progress = Progress(word_package="literatura", keyboard_view="letters")
+            progress = Progress(word_package="es-la", keyboard_view="letters")
             progress.stat("e").append_lesson(1, 0, 220)
+            progress.best_wpm_by_package["es-la"] = 42
+            progress.post_alphabet_focus = "e"
+            progress.post_alphabet_focus_sessions = 2
             save_progress(progress, path)
             loaded = load_progress(path)
             self.assertEqual(loaded.stat("e").hits, 1)
             self.assertEqual(loaded.stat("e").time_ms, 220)
             self.assertEqual(loaded.stat("e").best_time_ms, 220)
-            self.assertEqual(loaded.word_package, "literatura")
+            self.assertEqual(loaded.word_package, "es-la")
             self.assertEqual(loaded.keyboard_view, "letters")
+            self.assertEqual(loaded.best_wpm, 42)
+            self.assertEqual(loaded.post_alphabet_focus, "e")
+            self.assertEqual(loaded.post_alphabet_focus_sessions, 2)
             json.loads(path.read_text(encoding="utf-8"))
 
     def test_legacy_save_without_keyboard_view_keeps_letters_bar(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "stats.json"
-            path.write_text('{"word_package": "literatura"}', encoding="utf-8")
+            path.write_text('{"word_package": "es-la"}', encoding="utf-8")
             self.assertEqual(load_progress(path).keyboard_view, "letters")
 
     def test_invalid_saved_word_package_uses_default(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "stats.json"
             path.write_text('{"word_package": "missing"}', encoding="utf-8")
-            self.assertEqual(load_progress(path).word_package, "literatura")
+            self.assertEqual(load_progress(path).word_package, "es-la")
 
     def test_malformed_letter_does_not_discard_other_progress(self):
         with tempfile.TemporaryDirectory() as directory:

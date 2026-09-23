@@ -20,8 +20,12 @@ from typing import Iterable
 
 
 APP_NAME = "keygraphy"
-VERSION = "0.3.0"
-LETTER_ORDER = "eaosrnlidutcmpbvhqgójíéfázyúñx"
+VERSION = "0.4.0"
+LETTER_ORDER = ""
+LETTER_ORDERS = {
+    "es-la": "aeoirnsctdlumpbgvfóhjízáxqéyñúkwü",
+    "en-us": "eiasnrtolcdpumghbyfvwkxjqz",
+}
 LEGACY_LETTER_ORDER = "eaosrnidlctumpbgvyqhfzjxkwñ"
 INITIAL_LETTERS = 6
 TARGET_WPM = 35
@@ -32,19 +36,24 @@ DEFAULT_ESC_DELAY_MS = 50
 LESSON_LENGTH = 120
 RESULT_FRAME_MS = 16
 RESULT_COUNT_MS_PER_UNIT = 2
+RESULT_WPM_MS_PER_UNIT = 20
 PARTIAL_BLOCKS = "▏▎▍▌▋▊▉"
 SPEED_FILTER_ALPHA = 0.1
 MIN_WORD_POOL = 15
 MAX_FREQUENT_WORDS = 1000
+FOCUSED_WORD_RATIO = 0.5
+POST_ALPHABET_FOCUS_SESSIONS = 3
 DATA_DIR = Path(__file__).resolve().parent / "data"
 BOOK_DIR = DATA_DIR / "books"
 WORD_PACKAGES = {
-    "literatura": DATA_DIR / "words-es-literatura.json",
+    "es-la": DATA_DIR / "words-es-la.json",
+    "en-us": DATA_DIR / "words-en-us.json",
 }
 WORD_PACKAGE_LABELS = {
-    "literatura": "Literatura española · obras clásicas",
+    "es-la": "Español · Latinoamérica",
+    "en-us": "English · United States",
 }
-DEFAULT_WORD_PACKAGE = "literatura"
+DEFAULT_WORD_PACKAGE = "es-la"
 MODES = ("practice", "book")
 MODE_LABELS = {"practice": "Práctica adaptativa", "book": "Transcribir libro"}
 KEYBOARD_VIEWS = ("letters", "keyboard")
@@ -89,12 +98,12 @@ BAR_RGBS = (
     (172, 176, 186),
 )
 KEYBOARD_ROWS = (
-    ("q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "´"),
+    ("q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "´", "¨"),
     ("a", "s", "d", "f", "g", "h", "j", "k", "l", "ñ"),
     ("z", "x", "c", "v", "b", "n", "m", ",", ".", "-"),
 )
 KEYBOARD_FINGER_GROUPS = (
-    ("q", "a", "z", "p", "ñ", "-", "´"),
+    ("q", "a", "z", "p", "ñ", "-", "´", "¨"),
     ("w", "s", "x", "o", "l", "."),
     ("e", "d", "c", "i", "k", ","),
     ("r", "f", "v", "t", "g", "b", "y", "h", "n", "u", "j", "m"),
@@ -127,12 +136,16 @@ def load_word_list(path: Path) -> tuple[str, ...]:
     return tuple(raw)
 
 
-WORDS = load_word_list(WORD_PACKAGES[DEFAULT_WORD_PACKAGE])
+WORDS: tuple[str, ...] = ()
 
 
 def select_word_package(name: str) -> None:
-    global WORDS
+    global LETTER_ORDER, WORDS
     WORDS = load_word_list(WORD_PACKAGES[name])
+    LETTER_ORDER = LETTER_ORDERS[name]
+
+
+select_word_package(DEFAULT_WORD_PACKAGE)
 
 
 @dataclass
@@ -184,6 +197,9 @@ class Progress:
     target_wpm: int = TARGET_WPM
     keyboard_view: str = DEFAULT_KEYBOARD_VIEW
     letters: dict[str, LetterStat] = field(default_factory=dict)
+    best_wpm_by_package: dict[str, float] = field(default_factory=dict)
+    post_alphabet_focus: str | None = None
+    post_alphabet_focus_sessions: int = 0
     word_package: str = DEFAULT_WORD_PACKAGE
     mode: str = "practice"
     selected_book: str = DEFAULT_BOOK
@@ -203,6 +219,10 @@ class Progress:
             elif all(self.best_confidence(current) >= 1 for current in included):
                 included.append(letter)
         return "".join(included)
+
+    @property
+    def alphabet_complete(self) -> bool:
+        return self.active_letters == LETTER_ORDER
 
     @property
     def target_time_ms(self) -> float:
@@ -228,7 +248,62 @@ class Progress:
             for letter in self.active_letters
             if self.best_confidence(letter) < 1
         ]
-        return min(learning, key=self.best_confidence) if learning else None
+        if learning:
+            return min(learning, key=self.best_confidence)
+        if not self.alphabet_complete:
+            return None
+        measured = [
+            letter
+            for letter in self.active_letters
+            if self.letters.get(letter) is not None
+            and self.letters[letter].time_ms is not None
+        ]
+        return (
+            max(measured, key=lambda letter: self.letters[letter].time_ms)
+            if measured
+            else None
+        )
+
+    @property
+    def best_wpm(self) -> float:
+        return self.best_wpm_by_package.get(self.word_package, 0.0)
+
+    def record_wpm(self, wpm: float) -> None:
+        if wpm > self.best_wpm:
+            self.best_wpm_by_package[self.word_package] = wpm
+
+    def lesson_focus(self) -> str | None:
+        if not self.alphabet_complete:
+            return self.weakest_letter()
+        stored = self.post_alphabet_focus
+        stored_stat = self.letters.get(stored) if stored is not None else None
+        if (
+            stored is not None
+            and stored in self.active_letters
+            and stored_stat is not None
+            and stored_stat.time_ms is not None
+            and self.post_alphabet_focus_sessions < POST_ALPHABET_FOCUS_SESSIONS
+        ):
+            return stored
+        focus = self.weakest_letter()
+        self.post_alphabet_focus = focus
+        self.post_alphabet_focus_sessions = 0
+        return focus
+
+    def record_lesson_focus(self, focus: str | None) -> None:
+        if (
+            self.alphabet_complete
+            and focus is not None
+            and focus == self.post_alphabet_focus
+        ):
+            self.post_alphabet_focus_sessions = min(
+                POST_ALPHABET_FOCUS_SESSIONS,
+                self.post_alphabet_focus_sessions + 1,
+            )
+
+    def reset_post_alphabet_focus(self) -> None:
+        self.post_alphabet_focus = None
+        self.post_alphabet_focus_sessions = 0
 
     def book_position(self, book: str | None = None) -> BookPosition:
         return self.books.setdefault(book or self.selected_book, BookPosition())
@@ -288,6 +363,10 @@ def load_progress(path: Path | None = None) -> Progress:
     path = path or data_path()
     try:
         raw = json.loads(path.read_text(encoding="utf-8"))
+        word_package = raw.get("word_package", DEFAULT_WORD_PACKAGE)
+        if word_package not in WORD_PACKAGES:
+            word_package = DEFAULT_WORD_PACKAGE
+        letter_order = LETTER_ORDERS[word_package]
         raw_letters = raw.get("letters", {})
         if not isinstance(raw_letters, dict):
             raw_letters = {}
@@ -296,6 +375,41 @@ def load_progress(path: Path | None = None) -> Progress:
             min(int(raw.get("target_wpm", TARGET_WPM)), MAX_TARGET_WPM),
         )
         target_time_ms = 60_000 / (target_wpm * 5)
+        raw_best_wpm = raw.get("best_wpm", {})
+        best_wpm_by_package: dict[str, float] = {}
+        if isinstance(raw_best_wpm, dict):
+            for package, value in raw_best_wpm.items():
+                if package not in WORD_PACKAGES:
+                    continue
+                try:
+                    best_wpm = float(value)
+                except (TypeError, ValueError):
+                    continue
+                if best_wpm > 0 and math.isfinite(best_wpm):
+                    best_wpm_by_package[package] = best_wpm
+        elif word_package in WORD_PACKAGES:
+            try:
+                best_wpm = float(raw_best_wpm)
+            except (TypeError, ValueError):
+                best_wpm = 0.0
+            if best_wpm > 0 and math.isfinite(best_wpm):
+                best_wpm_by_package[word_package] = best_wpm
+        raw_focus = raw.get("post_alphabet_focus")
+        post_alphabet_focus = (
+            raw_focus
+            if isinstance(raw_focus, str) and raw_focus in letter_order
+            else None
+        )
+        try:
+            post_alphabet_focus_sessions = max(
+                0,
+                min(
+                    int(raw.get("post_alphabet_focus_sessions", 0)),
+                    POST_ALPHABET_FOCUS_SESSIONS,
+                ),
+            )
+        except (TypeError, ValueError):
+            post_alphabet_focus_sessions = 0
         raw_keyboard_view = raw.get("keyboard_view")
         if raw_keyboard_view in KEYBOARD_VIEWS:
             keyboard_view = raw_keyboard_view
@@ -314,7 +428,7 @@ def load_progress(path: Path | None = None) -> Progress:
         legacy_mastered = set(LEGACY_LETTER_ORDER[: legacy_unlocked - 1])
         letters: dict[str, LetterStat] = {}
         for letter, values in raw_letters.items():
-            if letter not in LETTER_ORDER or not isinstance(values, dict):
+            if letter not in letter_order or not isinstance(values, dict):
                 continue
             try:
                 hits = max(0, int(values.get("hits", 0)))
@@ -348,9 +462,6 @@ def load_progress(path: Path | None = None) -> Progress:
                 time_ms=time_ms,
                 best_time_ms=best_time_ms,
             )
-        word_package = raw.get("word_package", DEFAULT_WORD_PACKAGE)
-        if word_package not in WORD_PACKAGES:
-            word_package = DEFAULT_WORD_PACKAGE
         mode = raw.get("mode", "practice")
         if mode not in MODES:
             mode = "practice"
@@ -397,6 +508,9 @@ def load_progress(path: Path | None = None) -> Progress:
             target_wpm=target_wpm,
             keyboard_view=keyboard_view,
             letters=letters,
+            best_wpm_by_package=best_wpm_by_package,
+            post_alphabet_focus=post_alphabet_focus,
+            post_alphabet_focus_sessions=post_alphabet_focus_sessions,
             word_package=word_package,
             mode=mode,
             selected_book=selected_book,
@@ -416,6 +530,9 @@ def save_progress(progress: Progress, path: Path | None = None) -> None:
         "target_wpm": progress.target_wpm,
         "keyboard_view": progress.keyboard_view,
         "word_package": progress.word_package,
+        "best_wpm": progress.best_wpm_by_package,
+        "post_alphabet_focus": progress.post_alphabet_focus,
+        "post_alphabet_focus_sessions": progress.post_alphabet_focus_sessions,
         "mode": progress.mode,
         "selected_book": progress.selected_book,
         "book_level": progress.book_level,
@@ -433,6 +550,8 @@ def save_progress(progress: Progress, path: Path | None = None) -> None:
 
 
 def unlock_feedback(progress: Progress) -> str:
+    if progress.alphabet_complete:
+        return "Alfabeto completo"
     focus = progress.weakest_letter()
     if focus is None:
         return "Alfabeto completo"
@@ -470,9 +589,9 @@ def pseudo_word(
     focus: str | None,
     rng: random.Random,
 ) -> str:
-    vowels = [letter for letter in active_letters if letter in "aeiouáéíóú"]
+    vowels = [letter for letter in active_letters if letter in "aeiouáéíóúü"]
     consonants = [
-        letter for letter in active_letters if letter not in "aeiouáéíóú"
+        letter for letter in active_letters if letter not in "aeiouáéíóúü"
     ]
     if not vowels or not consonants:
         pool = list(active_letters)
@@ -494,16 +613,32 @@ def build_word_pool(
     rng: random.Random,
     minimum: int = MIN_WORD_POOL,
 ) -> list[str]:
-    _, focused = eligible_words(active_letters, focus)
-    pool = focused[:MAX_FREQUENT_WORDS]
+    eligible, focused = eligible_words(active_letters, focus)
+    if focus is not None and active_letters == LETTER_ORDER:
+        general = [word for word in eligible if focus not in word]
+        focused_limit = round(MAX_FREQUENT_WORDS * FOCUSED_WORD_RATIO)
+        general_limit = MAX_FREQUENT_WORDS - focused_limit
+        pool = focused[:focused_limit] + general[:general_limit]
+    elif focus is None:
+        pool = eligible[:MAX_FREQUENT_WORDS]
+    else:
+        pool = focused[:MAX_FREQUENT_WORDS]
     attempts = 0
     while len(pool) < minimum and attempts < minimum * 100:
-        word = pseudo_word(active_letters, focus, rng)
+        word_focus = focus
+        if focus is not None and active_letters == LETTER_ORDER:
+            focused_count = sum(focus in word for word in pool)
+            word_focus = focus if focused_count < len(pool) * FOCUSED_WORD_RATIO else None
+        word = pseudo_word(active_letters, word_focus, rng)
         if word not in pool:
             pool.append(word)
         attempts += 1
     while len(pool) < minimum:
-        pool.append(pseudo_word(active_letters, focus, rng))
+        word_focus = focus
+        if focus is not None and active_letters == LETTER_ORDER:
+            focused_count = sum(focus in word for word in pool)
+            word_focus = focus if focused_count < len(pool) * FOCUSED_WORD_RATIO else None
+        pool.append(pseudo_word(active_letters, word_focus, rng))
     return pool
 
 
@@ -514,7 +649,7 @@ def generate_lesson(
 ) -> str:
     rng = rng or random.Random()
     active = progress.active_letters
-    focus = progress.weakest_letter()
+    focus = progress.lesson_focus()
     pool = build_word_pool(active, focus, rng)
     result: list[str] = []
     length = 0
@@ -552,7 +687,7 @@ class Session:
     def __init__(self, progress: Progress, text: str) -> None:
         self.progress = progress
         self.text = text
-        self.focus = progress.weakest_letter()
+        self.focus = progress.lesson_focus()
         self.letter_samples: dict[str, LessonSample] = {}
         self.committed = False
         self.typed: list[str] = []
@@ -562,6 +697,7 @@ class Session:
         self.error_positions: set[int] = set()
         self.started_at: float | None = None
         self.last_key_at: float | None = None
+        self.finished_at: float | None = None
 
     @property
     def complete(self) -> bool:
@@ -575,7 +711,12 @@ class Session:
     def wpm(self) -> float:
         if self.started_at is None or not self.typed:
             return 0.0
-        elapsed = max(time.monotonic() - self.started_at, 0.001)
+        ended_at = (
+            self.finished_at
+            if self.finished_at is not None
+            else time.monotonic()
+        )
+        elapsed = max(ended_at - self.started_at, 0.001)
         return (len(self.typed) / 5) / (elapsed / 60)
 
     def add(self, character: str, now: float | None = None) -> None:
@@ -607,6 +748,8 @@ class Session:
             self.typed.append(character)
             self.correct += 1
             self.mistake = False
+            if self.complete:
+                self.finished_at = now
         else:
             self.mistake = True
             self.error_positions.add(len(self.typed))
@@ -640,6 +783,7 @@ class Session:
         self.committed = False
         self.started_at = None
         self.last_key_at = None
+        self.finished_at = None
 
 
 def book_expected_positions(text: str, level: int) -> tuple[tuple[int, str], ...]:
@@ -1007,7 +1151,7 @@ def keyboard_focus_keys(focus: str | None) -> set[str]:
                 focus,
                 "",
             ),
-            "´" if focus in {"á", "é", "í", "ó", "ú"} else "",
+            "¨" if focus == "ü" else "´" if focus in {"á", "é", "í", "ó", "ú"} else "",
         }
         - {""}
     )
@@ -1455,6 +1599,8 @@ def apply_options(stdscr: curses.window, progress: Progress) -> bool:
     progress.selected_book = book
     progress.target_wpm = target_wpm
     progress.keyboard_view = keyboard_view
+    if word_package != previous[1] or target_wpm != previous[3]:
+        progress.reset_post_alphabet_focus()
     if word_package != previous[1]:
         select_word_package(word_package)
     save_progress(progress)
@@ -1510,30 +1656,67 @@ def draw_result(
     target = progress.target_time_ms
     focus = session.focus
     start_y = max(2, (height - 9) // 2)
+    elapsed_ms = ticks * RESULT_FRAME_MS
 
     title: str | None = None
     blink = False
-    if unlocked:
+    if progress.alphabet_complete:
+        title = "· ALFABETO COMPLETO ·"
+    elif unlocked:
         title = "· LETTER UNLOCKED ·"
         blink = True
     elif hi_score:
         title = "· NEW RECORD ·"
         blink = True
-    elif focus is None:
-        title = "· ALFABETO COMPLETO ·"
 
-    if focus is None:
+    if progress.alphabet_complete:
+        current_wpm = session.wpm
+        best_wpm = progress.best_wpm
+        animated_current_wpm = min(
+            current_wpm,
+            elapsed_ms // RESULT_WPM_MS_PER_UNIT,
+        )
+        animated_best_wpm = min(
+            best_wpm,
+            elapsed_ms // RESULT_WPM_MS_PER_UNIT,
+        )
+        animated_target_wpm = min(
+            progress.target_wpm,
+            elapsed_ms // RESULT_WPM_MS_PER_UNIT,
+        )
+        labels = ("CURRENT", "BEST", "TARGET")
+        values = (
+            f"{animated_current_wpm:03.0f} ppm",
+            f"{animated_best_wpm:03.0f} ppm",
+            f"{animated_target_wpm:03d} ppm",
+        )
+    elif focus is None:
         current_ms = 0
         best_ms = 0
+        animated_current_ms = 0
+        animated_best_ms = 0
+        animated_target_ms = min(
+            round(target), elapsed_ms // RESULT_COUNT_MS_PER_UNIT
+        )
+        labels = ("CURRENT", "BEST", "TARGET")
+        values = (
+            f"{animated_current_ms:03d} ms",
+            f"{animated_best_ms:03d} ms",
+            f"{animated_target_ms:03d} ms",
+        )
     else:
         stat = progress.stat(focus)
         current_ms = round(stat.time_ms or 0)
         best_ms = round(stat.best_time_ms or 0)
-
-    elapsed_ms = ticks * RESULT_FRAME_MS
-    animated_current_ms = min(current_ms, elapsed_ms // RESULT_COUNT_MS_PER_UNIT)
-    animated_best_ms = min(best_ms, elapsed_ms // RESULT_COUNT_MS_PER_UNIT)
-    animated_target_ms = min(round(target), elapsed_ms // RESULT_COUNT_MS_PER_UNIT)
+        animated_current_ms = min(current_ms, elapsed_ms // RESULT_COUNT_MS_PER_UNIT)
+        animated_best_ms = min(best_ms, elapsed_ms // RESULT_COUNT_MS_PER_UNIT)
+        animated_target_ms = min(round(target), elapsed_ms // RESULT_COUNT_MS_PER_UNIT)
+        labels = ("CURRENT", "BEST", "TARGET")
+        values = (
+            f"{animated_current_ms:03d} ms",
+            f"{animated_best_ms:03d} ms",
+            f"{animated_target_ms:03d} ms",
+        )
 
     if focus is not None:
         safe_addstr(
@@ -1544,12 +1727,6 @@ def draw_result(
             attr(Theme.ACCENT, curses.A_BOLD),
         )
 
-    labels = ("CURRENT", "BEST", "TARGET")
-    values = (
-        f"{animated_current_ms:03d} ms",
-        f"{animated_best_ms:03d} ms",
-        f"{animated_target_ms:03d} ms",
-    )
     column_width = 10
     inner_width = column_width * len(labels) + 6
     box_x = max(1, (width - inner_width - 2) // 2)
@@ -1649,7 +1826,11 @@ def run_practice_session(stdscr: curses.window, progress: Progress) -> str:
     previous_best = (
         progress.stat(session.focus).best_time_ms if session.focus else None
     )
+    session_wpm = session.wpm
     session.commit()
+    progress.record_lesson_focus(session.focus)
+    if progress.alphabet_complete:
+        progress.record_wpm(session_wpm)
     unlocked = [
         letter for letter in progress.active_letters if letter not in previous_letters
     ]

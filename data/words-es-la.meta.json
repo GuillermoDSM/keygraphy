@@ -1,0 +1,13 @@
+{
+  "locale": "es-la",
+  "source_language": "es",
+  "source": "wordfreq",
+  "wordfreq_version": "3.1.1",
+  "wordlist": "large",
+  "snapshot": "language usage through 2021",
+  "word_count": 10000,
+  "letter_order": "aeoirnsctdlumpbgvfóhjízáxqéyñúkwü",
+  "source_url": "https://github.com/rspeer/wordfreq",
+  "data_license": "CC BY-SA 4.0",
+  "sha256": "5dc398b953745faea56485473e16467f8cbf71104e46cc660cb4cb3da42b73d9"
+}

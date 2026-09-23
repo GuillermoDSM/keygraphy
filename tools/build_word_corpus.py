@@ -1,79 +1,92 @@
 #!/usr/bin/env python3
-"""Build the Spanish practice corpus from the bundled public-domain books."""
+"""Build locale-specific practice corpora from wordfreq."""
 
 from __future__ import annotations
 
 import hashlib
 import json
-import re
 from collections import Counter
 from pathlib import Path
 
+from wordfreq import top_n_list
+
 
 ROOT = Path(__file__).resolve().parents[1]
-BOOK_PATHS = (
-    ROOT / "data" / "books" / "la-iliada.json",
-    ROOT / "data" / "books" / "la-odisea.json",
-)
-OUTPUT = ROOT / "data" / "words-es-literatura.json"
-METADATA = ROOT / "data" / "words-es-literatura.meta.json"
-WORD_LIMIT = 10_000
-PRACTICE_ALPHABET = set("abcdefghijklmnopqrstuvwxyzñáéíóú")
-TOKEN = re.compile(r"[a-záéíóúüñ]+", re.IGNORECASE)
+WORD_COUNT = 10_000
+CANDIDATE_COUNT = 50_000
+WORDLIST = "large"
+WORDFREQ_VERSION = "3.1.1"
+WORDFREQ_URL = "https://github.com/rspeer/wordfreq"
+DATA_LICENSE = "CC BY-SA 4.0"
+LANGUAGES = {
+    "es-la": {
+        "source_language": "es",
+        "alphabet": set("abcdefghijklmnñopqrstuvwxyzáéíóúü"),
+        "output": ROOT / "data" / "words-es-la.json",
+        "metadata": ROOT / "data" / "words-es-la.meta.json",
+    },
+    "en-us": {
+        "source_language": "en",
+        "alphabet": set("abcdefghijklmnopqrstuvwxyz"),
+        "output": ROOT / "data" / "words-en-us.json",
+        "metadata": ROOT / "data" / "words-en-us.meta.json",
+    },
+}
 
 
-def book_words(path: Path) -> list[str]:
-    payload = json.loads(path.read_text(encoding="utf-8"))
+def build_words(language: str, alphabet: set[str]) -> list[str]:
     words: list[str] = []
-    for section in payload["sections"]:
-        for chunk in section["chunks"]:
-            for match in TOKEN.finditer(chunk):
-                word = match.group().lower()
-                if len(word) > 1 and set(word) <= PRACTICE_ALPHABET:
-                    words.append(word)
+    seen: set[str] = set()
+    for raw in top_n_list(language, CANDIDATE_COUNT, wordlist=WORDLIST):
+        word = raw.casefold()
+        if len(word) < 2 or not word.isalpha() or not set(word) <= alphabet:
+            continue
+        if word in seen:
+            continue
+        seen.add(word)
+        words.append(word)
+        if len(words) == WORD_COUNT:
+            break
+    if len(words) != WORD_COUNT:
+        raise RuntimeError(
+            f"{language}: wordfreq solo produjo {len(words)} palabras utilizables"
+        )
     return words
 
 
 def main() -> int:
-    counts: Counter[str] = Counter()
-    letter_counts: Counter[str] = Counter()
-    source_metadata: list[dict[str, str | int]] = []
-    for path in BOOK_PATHS:
-        words = book_words(path)
-        counts.update(words)
-        letter_counts.update("".join(words))
-        source_metadata.append(
-            {
-                "path": str(path.relative_to(ROOT)),
-                "word_tokens": len(words),
-                "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
-            }
+    for locale, config in LANGUAGES.items():
+        words = build_words(config["source_language"], config["alphabet"])
+        letter_counts: Counter[str] = Counter("".join(words))
+        letter_order = "".join(
+            sorted(
+                config["alphabet"],
+                key=lambda letter: (-letter_counts[letter], letter),
+            )
         )
-
-    ranked = sorted(counts, key=lambda word: (-counts[word], word))[:WORD_LIMIT]
-    if len(ranked) < 5_000:
-        raise RuntimeError(f"El corpus solo contiene {len(ranked)} palabras únicas")
-    letter_order = "".join(
-        sorted(letter_counts, key=lambda letter: (-letter_counts[letter], letter))
-    )
-
-    OUTPUT.write_text(
-        json.dumps(ranked, ensure_ascii=False, indent=1) + "\n",
-        encoding="utf-8",
-    )
-    metadata = {
-        "word_count": len(ranked),
-        "unique_source_words": len(counts),
-        "source_tokens": sum(counts.values()),
-        "letter_order": letter_order,
-        "sources": source_metadata,
-        "sha256": hashlib.sha256(OUTPUT.read_bytes()).hexdigest(),
-    }
-    METADATA.write_text(
-        json.dumps(metadata, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
-    print(f"Generated {len(ranked)} words from {sum(counts.values())} tokens")
+        output = config["output"]
+        output.write_text(
+            json.dumps(words, ensure_ascii=False, indent=1) + "\n",
+            encoding="utf-8",
+        )
+        metadata = {
+            "locale": locale,
+            "source_language": config["source_language"],
+            "source": "wordfreq",
+            "wordfreq_version": WORDFREQ_VERSION,
+            "wordlist": WORDLIST,
+            "snapshot": "language usage through 2021",
+            "word_count": len(words),
+            "letter_order": letter_order,
+            "source_url": WORDFREQ_URL,
+            "data_license": DATA_LICENSE,
+            "sha256": hashlib.sha256(output.read_bytes()).hexdigest(),
+        }
+        config["metadata"].write_text(
+            json.dumps(metadata, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        print(f"{locale}: generated {len(words)} words")
     return 0
 
 
