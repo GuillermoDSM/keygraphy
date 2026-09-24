@@ -23,7 +23,7 @@ APP_NAME = "keygraphy"
 VERSION = "0.4.0"
 LETTER_ORDER = ""
 LETTER_ORDERS = {
-    "es-la": "aeoirnsctdlumpbgvfóhjízáxqéyñúkwü",
+    "es-la": "eaosnirldctumpgbvófqhíájzéyxñúkwü",
     "en-us": "eiasnrtolcdpumghbyfvwkxjqz",
 }
 LEGACY_LETTER_ORDER = "eaosrnidlctumpbgvyqhfzjxkwñ"
@@ -128,12 +128,33 @@ def load_word_list(path: Path) -> tuple[str, ...]:
     try:
         raw = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
-        raise RuntimeError(f"No se pudo cargar el corpus español: {path}") from error
+        raise RuntimeError(f"No se pudo cargar el corpus de palabras: {path}") from error
     if not isinstance(raw, list) or not 5_000 <= len(raw) <= 10_000:
-        raise RuntimeError("El corpus español debe contener entre 5.000 y 10.000 palabras")
-    if not all(isinstance(word, str) and word for word in raw):
-        raise RuntimeError("El corpus español contiene entradas inválidas")
-    return tuple(raw)
+        raise RuntimeError("El corpus debe contener entre 5.000 y 10.000 palabras")
+    words: list[str] = []
+    for entry in raw:
+        if isinstance(entry, str):
+            word = entry
+        elif isinstance(entry, dict):
+            word = entry.get("word")
+        else:
+            word = None
+        if not isinstance(word, str) or not word:
+            raise RuntimeError("El corpus contiene entradas inválidas")
+        words.append(word)
+    return tuple(words)
+
+
+def load_letter_order(path: Path, fallback: str) -> str:
+    metadata_path = path.with_name(f"{path.stem}.meta.json")
+    try:
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+        letter_order = metadata.get("letter_order")
+    except (OSError, json.JSONDecodeError):
+        return fallback
+    if not isinstance(letter_order, str) or not letter_order:
+        return fallback
+    return letter_order
 
 
 WORDS: tuple[str, ...] = ()
@@ -142,7 +163,8 @@ WORDS: tuple[str, ...] = ()
 def select_word_package(name: str) -> None:
     global LETTER_ORDER, WORDS
     WORDS = load_word_list(WORD_PACKAGES[name])
-    LETTER_ORDER = LETTER_ORDERS[name]
+    LETTER_ORDER = load_letter_order(WORD_PACKAGES[name], LETTER_ORDERS[name])
+    LETTER_ORDERS[name] = LETTER_ORDER
 
 
 select_word_package(DEFAULT_WORD_PACKAGE)

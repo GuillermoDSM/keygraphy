@@ -18,10 +18,12 @@ the full alphabet is active, each focus is held for three lessons, half of the
 words include the slowest current letter, and the result screen shows current
 and best PPM for the selected word package.
 
-Each language uses its own frequency order. `es-LA` is currently backed by the
-general Spanish list from the source dataset because that dataset does not
-publish a separate Latin American list; `en-US` uses its general English list.
-The terminal handles the physical keyboard mapping.
+Each language uses its own frequency order. The `es-LA` package is ranked from
+nine modern Spanish open books balanced across literature, history, and business
+and economics. The sources are pan-Hispanic rather than limited to one country;
+see [`CORPUS.md`](CORPUS.md) for the methodology and attribution. The `en-US`
+package remains a separate general English list. The terminal handles the
+physical keyboard mapping.
 
 Select the English package directly with:
 
@@ -83,18 +85,18 @@ python3 -m unittest -v
 
 ## Word lists
 
-The lists are generated with `wordfreq` 3.1.1 using its `large` wordlists,
-which combine multiple language sources and represent usage through 2021. The
-generated files include their source metadata and checksums. Rebuild them with:
+The Spanish list is generated from the nine sources in
+`data/words-es-la.sources.json`. The generated entries retain their score, rank,
+coverage, and per-source counts; the application loads only the `word` field.
+Rebuild it with Python 3.10 or newer and `pdftotext`:
 
 ```sh
-python3 -m pip install wordfreq==3.1.1
 python3 tools/build_word_corpus.py
 ```
 
-The generated data is identified by `wordfreq` as CC BY-SA 4.0 data. Keep its
-source notice when redistributing the word lists; the upstream notice is at
-<https://github.com/rspeer/wordfreq/blob/master/NOTICE.md>.
+The Spanish sources use CC BY 4.0 and require attribution. The bundled `en-US`
+list is retained from `wordfreq` 3.1.1 and remains subject to its CC BY-SA 4.0
+notice: <https://github.com/rspeer/wordfreq/blob/master/NOTICE.md>.
 
 ## Bundled books
 

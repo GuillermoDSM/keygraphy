@@ -1,13 +1,1203 @@
 {
   "locale": "es-la",
-  "source_language": "es",
-  "source": "wordfreq",
-  "wordfreq_version": "3.1.1",
-  "wordlist": "large",
-  "snapshot": "language usage through 2021",
+  "source": "nine modern Spanish open books",
+  "minimum_year": 1970,
+  "license_policy": "CC BY 4.0 or another license permitting commercial redistribution",
+  "genres": {
+    "literatura": 3,
+    "historia": 3,
+    "negocios": 3
+  },
   "word_count": 10000,
-  "letter_order": "aeoirnsctdlumpbgvfóhjízáxqéyñúkwü",
-  "source_url": "https://github.com/rspeer/wordfreq",
-  "data_license": "CC BY-SA 4.0",
-  "sha256": "5dc398b953745faea56485473e16467f8cbf71104e46cc660cb4cb3da42b73d9"
+  "candidate_count": 52287,
+  "minimum_source_coverage": 2,
+  "scoring": {
+    "per_source": "count / valid_token_count * 1,000,000",
+    "genre_score": "mean of the three source frequencies",
+    "score": "mean of the three genre scores",
+    "tie_breakers": [
+      "source coverage descending",
+      "word ascending"
+    ]
+  },
+  "letter_order": "eaosnirldctumpgbvófqhíájzéyxñúkwü",
+  "sources": [
+    {
+      "id": "culturas-civilizaciones",
+      "title": "Culturas y Civilizaciones de los Países Hispanos",
+      "author": "Ángela Pacheco González",
+      "year": 2025,
+      "genre": "historia",
+      "language": "es",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "record_url": "https://open.umn.edu/opentextbooks/textbooks/culturas-y-civilizaciones-de-los-paises-hispanos-cultures-and-civilizations-of-the-hispanic-countries?locale=es",
+      "source_url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/",
+      "source_format": "html",
+      "crawl_prefix": "/culturaycivilizaciondelospaiseshispanos/",
+      "crawl_depth": 2,
+      "source_sha256": "7924c3c02d6e42776499c570b81596fcf9d26b95e8ba8e7337f431f91b18723f",
+      "text_sha256": "f51ec50b9fc4d8701b175f1fa3891ea12494efbf6f4e74eceb64b57af26b5c32",
+      "page_count": 29,
+      "page_hashes": [
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/",
+          "sha256": "7924c3c02d6e42776499c570b81596fcf9d26b95e8ba8e7337f431f91b18723f"
+        },
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/back-matter/contributors/",
+          "sha256": "1a892abfd5544a7b743e959821e435bf28eab89183f6cd0e904334bce52c5e90"
+        },
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/back-matter/historial-de-actualizaciones/",
+          "sha256": "bf0ae8c9a1877e45faebb4987780cc780fb4c3bc6bb99a4b56550e5876af86a1"
+        },
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/argentina/",
+          "sha256": "f5cbcdba9bd8edbbdfd6c326b8afd020b6b5d43beb893eb4d200c451ff0b2ed9"
+        },
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/bolivia/",
+          "sha256": "f0e5639a645f01cad3152f53f5b81c7d9c5a112da1366a479205bdfb7504e3fa"
+        },
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/chile/",
+          "sha256": "6656656a22a6ed3c21b2a999b2d98dcfccc7252faf00a03a211f8836c688dadb"
+        },
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/colombia/",
+          "sha256": "a90ba13a0704711505d13be61f54324c343624a142c9fca16c5c4ec66126742c"
+        },
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/costa-rica/",
+          "sha256": "67848db21d684670b4bf60c3af2fdd89d3805e75cbce077ca295023b4953df20"
+        },
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/cuba/",
+          "sha256": "811a8e0c31e88b35bc3b3d5044d64451c5585907e89daa73f9a14e3418fcab19"
+        },
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/ecuador/",
+          "sha256": "f7ee134d4dc7a01554828635ebd6423ea29c179751b6b5eac9a32b50acfe98c1"
+        },
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/el-salvador/",
+          "sha256": "05e936be1b1d0e4599c4f51b042792b05b1cca32bb618ba1b1e8e5fc958287a7"
+        },
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/espana/",
+          "sha256": "2aec3af84015105b5688561d51297a60757cc9ac3dde271fd17e7227fe5f42b5"
+        },
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/estados-unidos/",
+          "sha256": "6052df8d2c280204e93128243dbb2cd9cee61d7498ec17cf6a3aa0efff6409f8"
+        },
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/guatemala/",
+          "sha256": "588adc0920df65ebe458da818f0e5a65092eff1901f195a7772aebb3c3d1c22a"
+        },
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/guinea-ecuatorial/",
+          "sha256": "b89afdc3bdbc771bf6d41b287c5a15009cb9688255a3b8986ae7c1dd53b135a7"
+        },
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/honduras/",
+          "sha256": "7bf62dcf19c102a2fd880ad71084368bde4e32f7bfa2acbd259e3f816ce3ba50"
+        },
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/mexico/",
+          "sha256": "e219a0761936e27b7a81cbe7854dffbd7b46d63d99e3da42f0d1699e78202f42"
+        },
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/nicaragua/",
+          "sha256": "9e5a3462e7a2677a2bb78130660f9e9a4d885a8fb9e56c6648f9b96915e72b5a"
+        },
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/panama/",
+          "sha256": "f22c01b56d5608ca23259776e74163aba9f4948b8aef68e0438bd9ae9f9fa2db"
+        },
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/paraguay/",
+          "sha256": "a4a2705d2b9432b5d572b0cc3d434c8586ebcdc8c9f3c6d28ca6c008b5db3189"
+        },
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/peru/",
+          "sha256": "e746e7ee85d81444d35c698865c36a929207ac561d28c0a6db54d0867dea6949"
+        },
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/republica-dominicana/",
+          "sha256": "343344f6c7713ca524b12ef054d6ef53b5ca17ee40a6c58e1d4e143eca3f8579"
+        },
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/uruguay/",
+          "sha256": "df8783840340fd282f34494984b4581c9eeb33a7bee179d93856f44a1af044e3"
+        },
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/venezuela/",
+          "sha256": "e09e9158e7faeb5418b6a2d37d67d68d187f198715d431c944e53a858e78e214"
+        },
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/front-matter/declaracion-de-accesibilidad/",
+          "sha256": "65f3315bc651aae6e204f268188a766c338fc2d80decef22c6d9066c84433946"
+        },
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/front-matter/dedicacion/",
+          "sha256": "f5407ffd91bef38e27b897edf638b09e6d246ed312f11c36e7e7c6c1cd65695b"
+        },
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/front-matter/introduccion/",
+          "sha256": "12e6ea98169d64d9e0f627a5265f00d50d2e5ac390b17ea059adf8758501e760"
+        },
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/front-matter/nota-del-editor/",
+          "sha256": "c848fdb991a257977aec7be604d38e912976657c1764466b5f1468d7b01f8183"
+        },
+        {
+          "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/front-matter/prefacio/",
+          "sha256": "b8a7635709b6a228ea65d0ccdf487e21535a1acf4bbabb87501ba8b538e8de27"
+        }
+      ],
+      "token_count": 79028,
+      "unique_word_count": 10066
+    },
+    {
+      "id": "historia-didactica",
+      "title": "Historia y su didáctica",
+      "author": "Carlos Eduardo Fonseca Largo; Johnny Edison Olivo Solís",
+      "year": 2025,
+      "genre": "historia",
+      "language": "es",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "record_url": "https://editorial.risei.org/index.php/risei/catalog/book/44",
+      "source_url": "https://editorial.risei.org/index.php/risei/catalog/download/44/210/2400?inline=1",
+      "source_format": "pdf",
+      "source_sha256": "922b78727a66a42728e93210afd395018af0a03e3056744bfc75dea47aca8de8",
+      "text_sha256": "33d2348539acbfa278c8766351c3f84233353c0bc89e9e7fae09045b8a1f9e10",
+      "page_count": null,
+      "page_hashes": [],
+      "token_count": 43396,
+      "unique_word_count": 7789
+    },
+    {
+      "id": "edad-moderna-ensenanza",
+      "title": "La Edad Moderna y la Enseñanza Secundaria: Recursos, análisis y formación",
+      "author": "Ramón Cózar Gutiérrez; Cosme Jesús Gómez Carrasco; Francisco García González",
+      "year": 2024,
+      "genre": "historia",
+      "language": "es",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "record_url": "https://pepa.une.es/handle/123456789/79764",
+      "source_url": "https://pepa.une.es/server/api/core/bitstreams/86995e63-a4f1-4ec4-9d96-fd198e889483/content",
+      "source_format": "pdf",
+      "source_sha256": "49a6d0a6b3ef97ec3f922d38a5c0aae15c103b91bff4f15d7a76dc0793e405cb",
+      "text_sha256": "ea0788184bcd141598bdfdb20c5401ce2ce458e4ca8ba7527bf9a567abe11edc",
+      "page_count": null,
+      "page_hashes": [],
+      "token_count": 205776,
+      "unique_word_count": 20170
+    },
+    {
+      "id": "cien-anos-platero",
+      "title": "Cien años de Platero y yo: 1914-2014",
+      "author": "Soledad González Ródenas; Eloy Navarro Domínguez; Jorge Urrutia Gómez; Ana María Navarrete Curbelo; Margarita García Candeira; y otros",
+      "year": 2017,
+      "genre": "literatura",
+      "language": "es",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "record_url": "https://pepa.une.es/entities/publication/9dfe98c9-2976-420d-86ea-52012c3df083",
+      "source_url": "https://pepa.une.es/server/api/core/bitstreams/302fc8f1-9975-4876-87a8-1606153f4885/content",
+      "source_format": "pdf",
+      "source_sha256": "f4ee7ceae7710345cb760b83399aa126e1c9a3f46e3fa6d4682f424e583de793",
+      "text_sha256": "3c2e4fb0132436646e6a135287f395b1f8ae5c23cf43100dc653caaa6f9a9929",
+      "page_count": null,
+      "page_hashes": [],
+      "token_count": 132317,
+      "unique_word_count": 17500
+    },
+    {
+      "id": "genio-ingenio-poeta-judeo-andaluz",
+      "title": "Genio e Ingenio del Poeta Judeo-Andaluz Miguel/Daniel Leví de Barrios",
+      "author": "Francisco Javier Sedeño Rodríguez; Kenneth Brown",
+      "year": 2024,
+      "genre": "literatura",
+      "language": "es",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "record_url": "https://pepa.une.es/entities/publication/03889016-6629-4437-9346-1a8e29dddfec",
+      "source_url": "https://pepa.une.es/server/api/core/bitstreams/163bbc2b-cd46-46a5-801a-3f5f04b4093d/content",
+      "source_format": "pdf",
+      "source_sha256": "3ded1ed52b69778198b2d887c5878f2b409029ed94490c9deabab482b11b6971",
+      "text_sha256": "495bc91febbcdcc0642a39ac1db444d5b63583114eb9afd042793a124404ca5a",
+      "page_count": null,
+      "page_hashes": [],
+      "token_count": 141978,
+      "unique_word_count": 19149
+    },
+    {
+      "id": "poeta-y-mar",
+      "title": "Poeta y mar",
+      "author": "José María Rico García; Mercedes Brea López; Eloy Navarro Domínguez; Francisco Javier Díez de Revenga; Margarita García Candeira",
+      "year": 2019,
+      "genre": "literatura",
+      "language": "es",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "record_url": "https://www.pepa.une.es/items/bf793f86-ae7d-4cbc-aad7-dc32ec4d8d53",
+      "source_url": "https://pepa.une.es/server/api/core/bitstreams/dd9da59c-1706-46f7-97c9-7c998c385e24/content",
+      "source_format": "pdf",
+      "source_sha256": "1a4c521d33b79883263c3456ef33557c1d4750a85e03332ecb932d4850a98fc8",
+      "text_sha256": "11c92034ebc67ea4a7871c99f57cd2bfdd0d22ec8ff47c759edb67ed9910805b",
+      "page_count": null,
+      "page_hashes": [],
+      "token_count": 69102,
+      "unique_word_count": 11557
+    },
+    {
+      "id": "introduccion-negocios",
+      "title": "Introducción a los Negocios (OpenStax)",
+      "author": "Lawrence J. Gitman; Carl McDaniel; Amit Shah; Monique Reece; Linda Koffel; Bethann Talsma; James C. Hyatt",
+      "year": 2022,
+      "genre": "negocios",
+      "language": "es",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "record_url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_%28OpenStax%29",
+      "source_url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_%28OpenStax%29",
+      "source_format": "html",
+      "crawl_prefix": "/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_%28OpenStax%29/",
+      "crawl_depth": 1,
+      "source_sha256": "27a7dab8d190a3b9862b3fdcdae40056b064eecf915f27ec170750a5cd243cc0",
+      "text_sha256": "d8287fd32c217b1aa985ee288f3a510498ecaa31a1ff180802ecc2858b6d4289",
+      "page_count": 23,
+      "page_hashes": [
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_%28OpenStax%29",
+          "sha256": "5c52f2fe923e52d007c709fd0872805fc177d53fa7e05390a635ebdc7a6ab234"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/00%3A_Front_Matter",
+          "sha256": "62f2b3b7e2c1e7198396f71d231cb9dbfae99e135157cf478e133e430cb8a9d8"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/00%3A_Materia_Frontal",
+          "sha256": "8fc8d5134628e7c759bb5d350965a394b467473b1e042e70688b1f95b1a39ae5"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/01%3A_Comprender_los_sistemas_econ%C3%B3micos_y_los_negocios",
+          "sha256": "9941050123df95aa6578531436bf996605a9610a1088099665c2f072c8b77930"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/02%3A_Tomar_decisiones_%C3%A9ticas_y_gestionar_un_negocio_socialmente_responsable",
+          "sha256": "9601a5bf2125742072abcf8930b097456c72516a409c177ca51a2b28cf2e631b"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/03%3A_Competir_en_el_mercado_global",
+          "sha256": "6c4810a0a86460a802c57bf6b61889b880a7de7f41c11880e3c8bc606fad8ef3"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/04%3A_Formas_de_propiedad_del_negocio",
+          "sha256": "6ab23a6dd07bfe5db421f1719024f16e37f16530527b19c8c4898c0ca1ff843c"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/05%3A_Emprendimiento-_Inicio_y_Gesti%C3%B3n_de_Tu_Propio_Negocio",
+          "sha256": "f5027ce46263fa34ab9b007f2c51b8620714ec3ba521b386fdb676922c70ced9"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/06%3A_Gesti%C3%B3n_y_Liderazgo_en_las_Organizaciones_de_Hoy",
+          "sha256": "47b7bc9e0f9f94daca446e0c7d2f94871117350b30b8d59b422d00eb2eb36524"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/07%3A_Dise%C3%B1o_de_estructuras_organizacionales",
+          "sha256": "08a07375997b9ff61bbddfa6072a12c8fe95d8121fb59431e699086241a78b33"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/08%3A_Gesti%C3%B3n_de_Recursos_Humanos_y_Relaciones_Laborales",
+          "sha256": "b54c7eb5775491fe98b11dde02b213c31ca86da430ed30e8046bc470db0604d1"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/09%3A_Motivar_a_los_empleados",
+          "sha256": "38f52b3f11d92cf46599face28d5125a47cb725f26d3a46dd4982600374cf3c2"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/10%3A_Lograr_una_Gesti%C3%B3n_de_Operaciones_de_Clase",
+          "sha256": "49f5e650fba2ed0c0121fce24203a3b7ebd251f0974e28dfcecf7ecacd41e653"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/11%3A_Creaci%C3%B3n_de_productos_y_estrategias_de_precios_para_satisfacer_las_necesidades_de_los_clientes",
+          "sha256": "8465d744a5775a34c5f52b632ffe3a951f3247c00e2175f09ac5a2b920a1dca5"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/12%3A_Distribuir_y_promover_productos_y_servicios",
+          "sha256": "2c383e1ad3be0dc23e58af31754f35e5f795d3336c54a7598f4630da14203dc3"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/13%3A_Uso_de_la_tecnolog%C3%ADa_para_administrar_la_informaci%C3%B3n",
+          "sha256": "9bf86400e58d68d23571e7138e11c19483bf7ee0720fd29658c2b99b0407bd08"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/14%3A_Uso_de_la_informaci%C3%B3n_financiera_y_la_contabilidad",
+          "sha256": "244d2cd42a40c19da272af7fe0824db9abe38f5d892d0307a5cf75e700df3c4d"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/15%3A_Comprender_el_dinero_y_las_instituciones_financieras",
+          "sha256": "0645641f8f57b1b5c0b861d700b895149c9ff0956a8820c5368871d2bfbbf5a7"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/16%3A_Comprensi%C3%B3n_de_la_gesti%C3%B3n_financiera_y_los_mercados_de_valores",
+          "sha256": "806801e5eb8b519e122bbeb0987d091445b8e11251525af235a251bf2e057d0a"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/17%3A_Tu_Carrera_en_Negocios",
+          "sha256": "e444ec9f5b354719b62ce6483ce6987958f2f0229cea10524a08bd7a415edc09"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/18%3A_Ap%C3%A9ndice_-_Entendiendo_el_Entorno_Jur%C3%ADdico_y_Fiscal",
+          "sha256": "5cb31a7d2b39bf682db5b3d89985b845e0084c6c79371a8a2c290576267670d7"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/zz%3A_Back_Matter",
+          "sha256": "ae86c4a2a19ff6ce7121c5f2fb5de8a593688d02f0f2e99d3ef5841443805656"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/zz%3A_Volver_Materia",
+          "sha256": "029f61fbbccf3d04add106c1b03c68725ee28f7854d1a3ed9858b3206059794d"
+        }
+      ],
+      "token_count": 7522,
+      "unique_word_count": 1992
+    },
+    {
+      "id": "macroeconomia",
+      "title": "Macroeconomía (OpenStax)",
+      "author": "Steven A. Greenlaw; David Shapiro",
+      "year": 2022,
+      "genre": "negocios",
+      "language": "es",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "record_url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_%28OpenStax%29",
+      "source_url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_%28OpenStax%29",
+      "source_format": "html",
+      "crawl_prefix": "/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_%28OpenStax%29/",
+      "crawl_depth": 1,
+      "source_sha256": "d7206e572c7ef62f9b7badff93ddc56c104244381e895f664f5934dcb80be91c",
+      "text_sha256": "728b71c1ff1a937122397eb3d8310ab2b0de3456d23c29ba11a1bedb1404bffa",
+      "page_count": 27,
+      "page_hashes": [
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_%28OpenStax%29",
+          "sha256": "f75577e5f1d1fac125301e336b034d5eb743e2ad11d7d2f6fc6c8a4bbad86e5e"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/00%3A_Front_Matter",
+          "sha256": "5ffdd3ca38ac836bfc759a5002dbd10ed3337834a53a8e930bd7b3968226f8ea"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/00%3A_Materia_Frontal",
+          "sha256": "9cd0906eaa5941a46b7a97c6eac0b4c2c9826b3d28642353ef3bbf5304b85499"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/01%3A_Bienvenido_a_Econom%C3%ADa",
+          "sha256": "33b14ed1a27c730e904831d9c4cf5b368a4058955001566c9996a63c574a1c79"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/02%3A_Elecci%C3%B3n_en_un_mundo_de_escasez",
+          "sha256": "21dae565dd528e69d62359266d0aba8dfb5118c7de9fda182bd1c0f64af78238"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/03%3A_Demanda_y_oferta",
+          "sha256": "01f4c9c910a8b82f923649bc52322f6fd86c88d791d821d3bf551f0dc4397726"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/04%3A_Mercados_Laborales_y_Financieros",
+          "sha256": "12bd46dcc1f163d8251a6801848a939b4da0bf9aa7fe3f81b8d029f3ec684704"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/05%3A_Elasticidad",
+          "sha256": "9ce055bcdeba4c232a49adc4eb60f12722958489aba67e777a26f42151f83dcb"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/06%3A_La_perspectiva_macroecon%C3%B3mica",
+          "sha256": "36c76184876f5baf62df4eaa039c42d093df243ec2ff5ede9ee340e2dd95a9d0"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/07%3A_Crecimiento_econ%C3%B3mico",
+          "sha256": "b53884c8562c763fcda5ccc04e0ffea8c3818e4f4d7a6334b947ed8aecec55ae"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/08%3A_Desempleo",
+          "sha256": "d24d49f75ff6a45afe292ee9977113fc92c45f10784228a0d5152dac8994b7ba"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/09%3A_Inflaci%C3%B3n",
+          "sha256": "4d6a4e8e1b7e6436e898c4655f43ca3c26ea200e46f189174d009587817c22f2"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/10%3A_El_comercio_internacional_y_los_flujos_de_capital",
+          "sha256": "0b7f15e18232c5055dfce7dcc8545c0e568dd024941f3e476f86287ad0a74eb2"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/12%3A_La_perspectiva_keynesiana",
+          "sha256": "ee02d8bbff824fda0a40ebeef36b004b6c5b41375a88acf36b19d6e244099c47"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/13%3A_La_perspectiva_neocl%C3%A1sica",
+          "sha256": "a472fd2289f5c6aa52c2a68f98bd68ddbd86164adba846576ecba7702103e021"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/14%3A_Dinero_y_Banca",
+          "sha256": "9ba1270fa4c52fa21d01bdd77f696ab77448f7342f446e2155283043c3572aa7"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/15%3A_Pol%C3%ADtica_Monetaria_y_Regulaci%C3%B3n_Bancaria",
+          "sha256": "37fca4100094ec384979054e66859ac5b7b09b89c2b978d8b167caf8106261d8"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/16%3A_Tipos_de_cambio_y_flujos_internacionales_de_capital",
+          "sha256": "7ffdb1a4efda9a367f8a07883780f3d71de13979fe43ba18c40be21d81788f81"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/17%3A_Presupuestos_Gubernamentales_y_Pol%C3%ADtica_Fiscal",
+          "sha256": "486f97f49e48e7160d1757f63dbeb0f3e35aea37c5514254a5d26347a583061a"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/18%3A_Los_impactos_de_los_pr%C3%A9stamos_gubernamentales",
+          "sha256": "924b932f9bb2c9b7284ed15aa3684a657157db21efaa43c954105b56c0934936"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/19%3A_Pol%C3%ADtica_macroecon%C3%B3mica_en_todo_el_mundo",
+          "sha256": "2e17895a07348f8ad4adf264a6fdf1ef13eb3c4ba0d8b86ce3f4e5fbcbd0e205"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/20%3A_Comercio_Internacional",
+          "sha256": "7b8a633c890cc5d0d3d2ff0b75325c8161111eb532337aa7ec2d386dd8e14791"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/21%3A_Globalizaci%C3%B3n_y_proteccionismo",
+          "sha256": "295924beb292f5840b27ae2fd9541bf5da9cabe90e233a775399e9ae991079b2"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/El_modelo_de_gasto_y_salida",
+          "sha256": "912c063e1b81fa58206cc29e1c16f837610e01ffe859aa97790e65d22ba9bb0b"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/El_uso_de_las_matem%C3%A1ticas_en_los_principios_de_la_econom%C3%ADa",
+          "sha256": "a7ab24edd523326c706550db578c0246d675d1539695e65d4a54e42008007f89"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/zz%3A_Back_Matter",
+          "sha256": "9b1e78160a5e2cb4be55b8054a695588173184b7148996e9394673402f6d686a"
+        },
+        {
+          "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/zz%3A_Volver_Materia",
+          "sha256": "0511301355fed0ee15249e7a1369f9713e41fc340276f3ed7094bd3145821b73"
+        }
+      ],
+      "token_count": 14602,
+      "unique_word_count": 1908
+    },
+    {
+      "id": "estadistica-empresarial",
+      "title": "Introducción a la estadística empresarial",
+      "author": "Alexander Holmes; Barbara Illowsky; Susan Dean",
+      "year": 2022,
+      "genre": "negocios",
+      "language": "es",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "record_url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/prefacio",
+      "source_url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/1-introduccion",
+      "source_format": "html",
+      "crawl_prefix": "/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/",
+      "crawl_depth": 1,
+      "max_pages": 500,
+      "source_sha256": "29df8c1412a045f9f8b2182621ed9f67808ffc82b3972942ffca0e998e30587e",
+      "text_sha256": "218380b9e662d80bd539e5d51e60b6fac25c9f3c9d1a83b7518b50f75039f3d8",
+      "page_count": 169,
+      "page_hashes": [
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/1-introduccion",
+          "sha256": "29df8c1412a045f9f8b2182621ed9f67808ffc82b3972942ffca0e998e30587e"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/1-1-definiciones-de-estadistica-probabilidad-y-terminos-clave",
+          "sha256": "f10c6f4ab0b935e7ac564e04458fba207cbca896f9c9834c6757b397a1b888ef"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/prefacio",
+          "sha256": "43710576d8333345ea118ccb22902aa2f052290dbb5d915aaf38af97881a0579"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/1-2-datos-muestreo-y-variacion-de-datos-y-muestreo",
+          "sha256": "edbf20df8dc7f551d8a847f245ace3c22ccbb893617bcfd155bcd3af666221ae"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/1-3-niveles-de-medicion",
+          "sha256": "3eea798c36b0ea57f4eafc6ea8f6a867cb6d14f4cf339d9856ca970815be9484"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/1-4-diseno-experimental-y-etica",
+          "sha256": "54ed4da357be6895227973ca50d3b11e0a7a4f596cbc872d8912540cc5334c70"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/1-terminos-clave",
+          "sha256": "092ae12491dd83c571cb2e44a9bcd6fe907fb4cfa2fc0e6ef120de1f9909d6c4"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/1-repaso-del-capitulo",
+          "sha256": "41f43c44104d9bae403a1562c17c601a2a0f0aead1fddbf780bc5c50330ee040"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/1-tarea-para-la-casa",
+          "sha256": "15f99b40a1ca5604d41f2eee47ab2b49398ae239f5fab9303ae88c75e87a2fbb"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/1-referencias",
+          "sha256": "a76f43047a4c2e3c9811f734fc9d06e660fe6f76998a491e4f914e15c871492a"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/1-soluciones",
+          "sha256": "a8833b845df00ff26b1503ba25444ad2df27b5294cdd70225308279feb1f78d4"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/2-introduccion",
+          "sha256": "c7e0cc4710287042b0eeb8b4b865c2058a4216b34225427866a7cf483ead7148"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/2-1-datos-mostrados",
+          "sha256": "ee4d6045e5ab971e8d64172515cf95f3deba2da434f6c34b05e09d49c85a0687"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/2-2-medidas-de-la-ubicacion-de-los-datos",
+          "sha256": "416c09c9bb2720ddfe9b2095c863e165bc915e2b230cd8c63ee73647c4243659"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/10-soluciones",
+          "sha256": "38f8c9cb99a8dc454fab5dd0bf12b3a0948974ffa1eb0445a855c96e54f08cc7"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/2-3-medidas-del-centro-de-los-datos",
+          "sha256": "d41e0576c0808154664cfca3cf93c892ab5aa33135356281da7f36a3c52e8e1b"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/10-practica",
+          "sha256": "1e596847549f82232b93988a7f4a88a855820ccd1e412769adef0a327276d30f"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/10-referencias",
+          "sha256": "7a591f6f55d94c5bfb55ff1b58665759e62caaea7649a4934ab1b36262628648"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/10-resumalo-todo-tarea-para-la-casa",
+          "sha256": "6a6c1abba4115a7e1dfdd534121f87b92e12b5540150b807ab685936d1e84656"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/10-tarea-para-la-casa",
+          "sha256": "4b8ced5cdd6561bbdc0b271731734d96b0128e3f24bb02420fb95237a4695051"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/11-introduccion",
+          "sha256": "66171204e27234a77beea6f98a10812edb8ec1b41162d6646594bc64de33c08d"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/2-4-notacion-sigma-y-calculo-de-la-media-aritmetica",
+          "sha256": "c03aa9e9378f06d60f6b8226ec6da2f5245b8497c8688e67ff836a73773813f2"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/10-1-comparacion-de-las-medias-de-dos-poblaciones-independientes",
+          "sha256": "19a1dd9c51b90497450b473ab23c97ef89db7b4a1c5abdbc59537775452c8541"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/10-4-comparacion-de-dos-proporciones-de-poblacion-independientes",
+          "sha256": "2bef926ae97d0488e133bdf15b2358e38fabc2a0b1553c9c86fa8b414d7e7c93"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/10-5-dos-medias-poblacionales-con-desviaciones-tipicas-conocidas",
+          "sha256": "dd657be90f4448032c0e301fb72959c0548efa7582e9920e752d97ee4d5c199a"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/10-6-muestras-coincidentes-o-emparejadas",
+          "sha256": "b4758666ea02d68a7d1ec66dad6b3374999baab28c0eb8ff5e5b59b8874109d7"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/10-repaso-de-formulas",
+          "sha256": "a41c8a3bbe961fcc71586cc3efa4745e596c74a760b2b530cd2e9a4ac7f07ec5"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/a-cuadros-estadisticos",
+          "sha256": "080d0811746b315e1eff75e8aef8dfe16334a7b6a7233b68f59200aa09ba3c3c"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/11-1-datos-sobre-la-distribucion-chi-cuadrado",
+          "sha256": "39b938331a2a1a8d7ccb66a6fe1213619101baa8256340a0c33f2ddf3b9900cc"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/2-5-media-geometrica",
+          "sha256": "200cd7d0c1f5d07229bff4d23d89e11634a228a7e565391db782d7c989496e5f"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/10-2-criterios-de-cohen-para-efectos-de-tamano-pequeno-mediano-y-grande",
+          "sha256": "2f7623edc0bcbe5bce075c59714cdd88273e3a1e59e29a130acd9b581a9fa4a1"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/10-introduccion",
+          "sha256": "e2daa606d082f843a5886158fc89c9483c26516b9e6979a83f4a5c8b901e3b34"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/7-1-teorema-del-limite-central-de-las-medias-muestrales",
+          "sha256": "057cd84f4d70be723500e09456c665042cdc593b4a054904b1eb6b3728828d0a"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/8-introduccion",
+          "sha256": "0a2030d3c737400a8b1ffd993559279b8b7e513ba6fa4fc1cb80ada94a369564"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/9-introduccion",
+          "sha256": "85a213d8a64a4c7f7b3fecd1247ebdb01965e51d5c157f772cf7607d6a7a1ca6"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/10-3-prueba-de-diferencias-de-medias-suponer-varianzas-de-poblacion-iguales",
+          "sha256": "092ae96d82b39385608cde391c52189c8bfe294cc68c21682dab45b7b3350a6f"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/10-terminos-clave",
+          "sha256": "1a674f201667ccfe425b36700e6d16a4b478151080357b6f3155931995b46661"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/10-repaso-del-capitulo",
+          "sha256": "fb11bd820bdcc4a9a2105ac573224c07ef5e8ad63f6cc652b27a0ec537c15d2a"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/13-soluciones",
+          "sha256": "c797fe78129661027c9dfecdbd8ad591bdd6f91244a051d178ceeca600ca184b"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/b-oraciones-simbolos-y-formulas-matematicas",
+          "sha256": "c379dd5202be872f93f8c2892eaf90af56cf70752925a454d23132da7df8c3e9"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/11-2-prueba-de-una-sola-varianza",
+          "sha256": "d3e69e2f80dd9f5a76ce58010f4cba90355c5d5d8d403839f69c34282e5fecd8"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/2-6-distorsion-y-media-mediana-y-moda",
+          "sha256": "1f17ff61850d078246ee79ada809e91d051774d336ec81c5d1ffbf3eacb2b141"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/9-soluciones",
+          "sha256": "e640f699a06aa83fa8dd3d8a5c81aa258664113e429acb6eff50af2808fd62bb"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/7-2-uso-del-teorema-del-limite-central",
+          "sha256": "85e35f25dc03fc64c63eb9390175c2c983b949ca3057f2558eb83a59b05fab48"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/7-introduccion",
+          "sha256": "fb09a55e523dac557f7bafd163f62f0487bbb5ad282b788b42ab67a4ab3b5208"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/7-soluciones",
+          "sha256": "c524bd51a692784ceea9c583e9f73c7e49bd22f039fedf0aed36e82fbc764466"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/8-1-un-intervalo-de-confianza-para-una-desviacion-tipica-de-la-poblacion-con-un-tamano-de-muestra-conocido-o-grande",
+          "sha256": "8faa38bab34644fe6ab41859f06da2de53c64c3696fcb4f559e770f0e98614cf"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/8-soluciones",
+          "sha256": "3bad220006381ded775ebd2642f6529a97f42aae2934513119ccd442581872fa"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/9-1-hipotesis-nula-y-alternativa",
+          "sha256": "62a7a6fb9d520bf7a904fcf7aa27e3f24e35b691870d30af0220c4f148cb4031"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/13-practica",
+          "sha256": "04ae3c204dcf31003c55db29248a9f131df0ddc212f316c353d8c33101da39a7"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/indice",
+          "sha256": "9959a030abb3a1f4d94afea04278c356cf4fc69eb71d6ccced2f2c795d3929ee"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/11-3-prueba-de-bondad-de-ajuste",
+          "sha256": "8a274c4c5f60de3a943099df0bc32d6d4b4fe8ca01c3f4680ee2da8bb79ecf16"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/2-7-medidas-de-la-dispersion-de-los-datos",
+          "sha256": "964aa846bb9ef7c635e979d785a1e38acab584e1438716242fbd719b4c78932a"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/9-practica",
+          "sha256": "515a44d3d20fd32db2a7a92fe606a7ba9f4e65c187a8a11703ce8f03deeaeed9"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/9-referencias",
+          "sha256": "dc48a82d1e355444d4ed5fafc186d35bea4febfe9617a1f8957127fa410a7721"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/9-tarea-para-la-casa",
+          "sha256": "ef16192764a4b83b065958e9a35d463674d83570c108fae81793c1a837a33ebb"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/7-3-teorema-del-limite-central-de-las-proporciones",
+          "sha256": "47bbdc55a74445af98c0e0d163e54fdff2698ef8120a424d594d1d3716d08447"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/6-soluciones",
+          "sha256": "0f890f88cc01e767231a583c457c7a17b5fe7e74bde426b5e30e6ba8133339fd"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/7-practica",
+          "sha256": "7e5d9ff2a0f90a0a50f6ffaa96d1f768a0fe37f4c8f7e132a0625c69a864bc73"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/7-referencias",
+          "sha256": "6779e37d1b7d07390c6f0d2f1d0e2ddabb0894cd6f69dbc9f6f11a980ec632aa"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/7-tarea-para-la-casa",
+          "sha256": "1e16e0ca5a45eaceb5fd64206ab460b77c30bb24cf05601b8e51eea4c6006acf"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/8-2-un-intervalo-de-confianza-para-una-desviacion-tipica-de-poblacion-desconocida-caso-de-una-muestra-pequena",
+          "sha256": "87eb53c65bb0f9dcbd6c07a5b11a709f19d1edeb41dd5beea76604e0e7a6824f"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/8-practica",
+          "sha256": "f494cf2eee2e061fa120964b8d902d210b8180e19ed6cfb91a76570e7e2ed176"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/8-referencias",
+          "sha256": "4e191ff5d5a4fca787078622789a73fd5718866d799e91386d8d7e9fed2855de"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/8-tarea-para-la-casa",
+          "sha256": "86bcbb968c0aa8d911ca193f4687266b2ad22d744c7d0f1b4eef93115eb6296f"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/9-2-resultados-y-errores-de-tipo-i-y-ii",
+          "sha256": "1ace32b88f6ce85ff41f29e85c542f361bbeda0294d14cb1ed60eb8d31b73d52"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/13-1-el-coeficiente-de-correlacion-r",
+          "sha256": "632ba0cef61c9517ca47e06eeab1f28d6856b31a59d10714e08dffe166919ad0"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/13-2-comprobacion-de-la-importancia-del-coeficiente-de-correlacion",
+          "sha256": "56ff3937e4f7a742056071192c6a86b0d503b45613dfcaf581481b0737290d2e"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/13-3-ecuaciones-lineales",
+          "sha256": "eddcf6542f5d5443f4df1ca2c9d5af1c5aa55bf6a1d47034df169087cacda926"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/13-4-la-ecuacion-de-regresion",
+          "sha256": "90167bbbeaae601f0fee4123bfd0b310c30eea7498b70f7224306575936fd28e"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/13-5-interpretacion-de-los-coeficientes-de-regresion-elasticidad-y-transformacion-logaritmica",
+          "sha256": "75db54839c4cf69a1ce676788ab1adff72fa94c715083703bb6d1ac2cc2953bc"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/13-6-prediccion-con-una-ecuacion-de-regresion",
+          "sha256": "b867799ce176319413d79696980c4668a333cfb2f1f99938fab97901969b4d50"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/13-7-como-utilizar-microsoft-excel-r-para-el-analisis-de-regresion",
+          "sha256": "7fb04313bb132f1f1ffb8292f771d65d24ac926e12b579895fb2f461d3f575f2"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/13-repaso-del-capitulo",
+          "sha256": "81a3135a724a450b3b69a95eee06e068b6ab78faa9e025b4c838e78739c4bc5d"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/11-4-prueba-de-independencia",
+          "sha256": "5bb3a9f3030dcd6034b30f939c887a82a43e2b68a83e4fcb40faad8a9ae2c796"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/11-5-prueba-de-homogeneidad",
+          "sha256": "2d6924808f691d7e039af89d400715a2e82788443981db0adf445e6c60576b79"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/12-2-anova-de-una-via",
+          "sha256": "5b43fbca1ce5c55354632104c4fb55774f8d01ad913c25b2f4c9a2718285ab05"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/12-3-la-distribucion-f-y-el-cociente-f",
+          "sha256": "795fa91a57a9e7068d3623cb2c5868818903c7704960440104a196739cbdb6e1"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/3-1-terminologia",
+          "sha256": "a97fc8c1b8756d29be349ce180f33172ab226700a67e8e34155972a9353e73e2"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/3-2-eventos-mutuamente-excluyentes-e-independientes",
+          "sha256": "63d3ab918a8bfabe2d90f9a5f3402c777bf72f3e219c4989ebd0330a2e38b04d"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/3-3-dos-reglas-basicas-de-la-probabilidad",
+          "sha256": "f34ee62e1c04d99059428945029bbb541686c89972ee731b336cc5147298a2e6"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/3-4-tablas-de-contingencia-y-arboles-de-probabilidad",
+          "sha256": "8a177f1da5e149380660619319c365f29c66a5dd765e647659eac39a0f7a3252"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/3-5-diagramas-de-venn",
+          "sha256": "b80a37a4ec6717ec8d72286883792498db252126c93bd811f78b05892013b6d8"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/4-2-distribucion-binomial",
+          "sha256": "babaaefd01ae81aceafc40047997d559efccb24b48d5d859ee980e5e1903a930"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/4-3-distribucion-geometrica",
+          "sha256": "c84a792f8e2d503e77a63fed5c19ef6d64978e96ad4c0ef44ba4c8c3ad69380f"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/4-4-distribucion-de-poisson",
+          "sha256": "ba452321fe9c0822637d504f0fab3db28f0fbaba095367293077e2b9aefadb9e"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/4-introduccion",
+          "sha256": "b400c026a9fc6bb8cfc3e0ca243e946afaa98c71f7397959b6d731dbda76996e"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/4-repaso-del-capitulo",
+          "sha256": "aa970e2fdcbf53dff588aed110f7fb51546850515cb56d1f4fb4d20275bdfa5d"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/5-1-propiedades-de-las-funciones-de-densidad-de-probabilidad-continuas",
+          "sha256": "26f3d2b5b0d6d0ddfa1c7c6107e9b1e75a066c395797276d43d34eab29c46403"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/5-3-la-distribucion-exponencial",
+          "sha256": "f19856864d71c2c8c7836e9b6c509efc9e87dd1f7e4c540c5f641b9551b2d775"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/6-1-la-distribucion-normal-estandar",
+          "sha256": "82921bbeb339fe48c5389d6dc226c93d4c5bfe379276b1f17b7bcde4d9cf2484"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/6-2-uso-de-la-distribucion-normal",
+          "sha256": "e6d1e66ee9b3e4a0b63211b230655ccb0d0698236bf641c073d7119e05696f78"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/8-3-un-intervalo-de-confianza-para-una-proporcion-de-poblacion",
+          "sha256": "3416cfe1221230a4d1281a539474cc3bfee249dd2558c17ec8f0fd397e18b43d"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/9-3-distribucion-necesaria-para-la-comprobacion-de-la-hipotesis",
+          "sha256": "172795d48c3a18c209a33b408c7a005468780e0bd908c408b049cf487b797d4f"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/9-4-ejemplos-de-pruebas-de-hipotesis-completas",
+          "sha256": "577f2d854d4cb65aa56e80db13449ca6c04ffc7bfdb6f63f0ffd5203fd96890a"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/9-repaso-del-capitulo",
+          "sha256": "6d5e03ab4b4d6b3e2372981fbfbcbb5c2c1fefbe9a98ce136aabc53c01962fa9"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/2-terminos-clave",
+          "sha256": "58e26bea6635c4bda00f9ebf73c2b41d0dfba2ef1378bdf331d4ed360efa70b1"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/9-repaso-de-formulas",
+          "sha256": "6b67b5ab273997ad07a011df0b80ce5bde8b4271008b36fd6eb8c33677f1f3e6"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/7-4-factor-de-correccion-de-poblacion-finita",
+          "sha256": "8966f4745db0bf95f758b2edd26b4097c56523b1d41fe736e9ceabeb1e240881"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/6-practica",
+          "sha256": "f874ecd6dd847aae157fac17006b4ffe660253d7d13039d4ec883d33fabea33c"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/6-referencias",
+          "sha256": "cc554a851e8db09ebda4f7952104458fbcfcf13bc43954f7838b8f56789fcee9"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/6-tarea-para-la-casa",
+          "sha256": "a41ff62d8f9bc5b8247d547ad92439aec329d33cb028758075a29854790e9ce5"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/7-repaso-de-formulas",
+          "sha256": "8bab5c6c90bc76783abe8c43d410b374730fd8dff8c99b0d2eb1c0f2401ef21a"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/8-4-calculo-del-tamano-de-la-muestra-n-variables-aleatorias-continuas-y-binarias",
+          "sha256": "d6fbb81a17fcdd52846e280e86ec4aff3ece058b92e6af16844061cb3dc0d29c"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/8-repaso-de-formulas",
+          "sha256": "eb3643621e49f47e46d6d7e290084d17e27ae4d856ebaf3dcd3d52582abe4146"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/13-introduccion",
+          "sha256": "d3f017c25cc103bb02b38a471024f99fdc71c58f4da421d6eced1933894dc097"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/13-terminos-clave",
+          "sha256": "9d3777aea7bc651897a836055b3f1d49ae74df9e50a38d262855949af539e689"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/11-6-comparacion-de-las-pruebas-chi-cuadrado",
+          "sha256": "bc0b30101e5a46c92bb1de452482680b7ca4859db5a87818aede1ea997030a8e"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/12-1-prueba-de-dos-varianzas",
+          "sha256": "f88a5b16ad3e394c9ccf8f8e91d2d1bdfc1689fe4137ffe020517920b69d798a"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/12-4-datos-sobre-la-distribucion-f",
+          "sha256": "f8a37b61fb5d7941c34b45bf859aca6983cab0950a842e39beb5b6c4c56282ac"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/3-introduccion",
+          "sha256": "e7a120faf9bad2522fc312fade2ce3f328d5cf6cb269a4b43f921c5c196cbaf2"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/3-terminos-clave",
+          "sha256": "de833011e1c154214a221fe16e8e4a61e9ca937837acdaf945c462fc09199f1f"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/4-1-distribucion-hipergeometrica",
+          "sha256": "9c9abaeee89b090d76480eb9e1ad7e5eb3efd8579159c47e453c6063d164ac45"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/4-terminos-clave",
+          "sha256": "d0d4b9263d922e75f9f1bed4d715b39583104b56f67cae1ff3d22970989fe0b2"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/3-soluciones",
+          "sha256": "e6e5dd3c2f7e71641bde3ab86c65333844f65b87ed36591f091059bb8cbf36d0"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/4-repaso-de-formulas",
+          "sha256": "355e5223cd72d0f28c80debbeaf70658fc7e9d659a55cae50cb4ebb4004b7fb6"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/5-2-la-distribucion-uniforme",
+          "sha256": "bddb7c3cc46ade0be1e31d8f47d89e9f8cb3d821927c8da86c42e3bff0139927"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/5-introduccion",
+          "sha256": "0b38538d4df1c2891143ca154e24ca9c5a7ae800132d276aed034cd6ef648056"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/5-terminos-clave",
+          "sha256": "f4e3ee3f2bbeb7f89813eca399a2a8040a501d56b63a7ebc72742adf402bef3d"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/6-introduccion",
+          "sha256": "9925b724c6a2911bc17debc7b05dc22403625227e4e75bcd75264a88f0c2025c"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/6-3-estimacion-de-la-binomial-con-la-distribucion-normal",
+          "sha256": "022c2b724e998a3029affe998d3fcf6633ac9a7f8b00b7f0932393c5d4e9ebc3"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/9-terminos-clave",
+          "sha256": "c50d630eb656070c1dbb5d95f01fa93d300e35369b521f839a662f37f18c8d32"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/2-repaso-del-capitulo",
+          "sha256": "d0623b4cc2cfd8657a33c9ee90d22990eb54eb3f714b24512d20418e41dd0bec"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/7-terminos-clave",
+          "sha256": "4f1193225edf06e717454b552e58f267e8fffdec0a5389ca2a91d95597910c2c"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/6-repaso-de-formulas",
+          "sha256": "e93b84011e6a7af67332c5d706549a02e702c185e3e2e6c01465f75dec48009a"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/7-repaso-del-capitulo",
+          "sha256": "60ceb4a242c229080c128cadfc21b1d46086bc95ad8404afd8fea3dc06865b0b"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/8-terminos-clave",
+          "sha256": "3b0b2bb8439b019ab1ea11a31a0b2dcc24e481cad75b200cbb9d195178550e88"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/8-repaso-del-capitulo",
+          "sha256": "70dad9fc5a09fc4803f4d9c59a3f77ca84359fb0ea6fc18db2c19005747b8e24"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/12-soluciones",
+          "sha256": "59af496f4905de03b27600f6a77ee1be4ed014fbb23dc8db572f4bf0bcccae64"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/11-terminos-clave",
+          "sha256": "2ac9be42dec8a21a20b48faa2f6f2116d17908b1817c909cfb0ae04f618a704a"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/12-introduccion",
+          "sha256": "4d4fe791802911ae273d12f5f8481d398cba5c66f4969a9f0942656d05a88faa"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/12-terminos-clave",
+          "sha256": "a4397bf47736a76cbdd49004134c9f6baf2949f66835c60a7d014ca0bbd36233"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/2-soluciones",
+          "sha256": "58a3d8660f34e303f5ae499d0413571c64e02bd07fb83d60acfc2e591e755172"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/3-repaso-del-capitulo",
+          "sha256": "6f1075c5d8397f63f2baf74edd9eb3b14db1e7cd49b7b7028b4bd52c704c6023"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/3-practica",
+          "sha256": "e0d3dc36eb7b31371da70d2d059fce4453f72463257919fb60c83ce3b44987a9"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/3-referencias",
+          "sha256": "de05bc90071dbaeb770fdf3937048d068b8e64a19d492dc2a9db9609fa803e18"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/3-resumalo-todo-tarea-para-la-casa",
+          "sha256": "b7004323748abd822c57c11ee396025a8613d182bfb68c522e6570cefc186d5d"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/3-tarea-para-la-casa",
+          "sha256": "d61890014657fdb984a026d876a2ca92c44dbd69126ef0dc0743ab7c31a1f94e"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/3-uniendolo-todo-practica",
+          "sha256": "54fdbb581392795c8ca4992bc3df13e1255f6f3121a7807455541863970b5893"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/4-practica",
+          "sha256": "4d1058f1e07ab08958d58292d3057384dd67312fc5187367d02c2700fbf1daf0"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/4-soluciones",
+          "sha256": "40ceb178dcf9e7d0775d01ab4ddd2cf32951b7510546f0094f1af86aaa2836ec"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/5-repaso-del-capitulo",
+          "sha256": "5786c6bb27471ac10d7b705ae995d4d02923e6bf4efafc9c92d295b555914e4b"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/5-soluciones",
+          "sha256": "800e515d8ed5d34a3c74c6b371057b44d68cfb4dd3813aa10d9f71b5f842686b"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/6-terminos-clave",
+          "sha256": "308c3df9e9262129fd347901718b3aaa3c52d961094d480e1b21aa37a27cbf9c"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/2-repaso-de-formulas",
+          "sha256": "bae062da27df99e26fbfb2411d9a4947dc5f0f799df9874bb7a911609f275de6"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/6-repaso-del-capitulo",
+          "sha256": "b9dd46513aa96cce6d4de05ec17b822370e1ee5c4f36ee01a35c9e5d798907c0"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/12-practica",
+          "sha256": "33fdc36e81a4f96dd3c4027facc0173bdf22ddb3f5c66ee62afdc9f208ce2b13"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/12-referencias",
+          "sha256": "797fe028f8c7e5034c79b306ec03e7d18652a5393360c4d1c1572d02ac499fd9"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/12-tarea-para-la-casa",
+          "sha256": "a49496b8b44a04f250fb87ac1dd4762a027fd8c3516280c8713f93beae3544a3"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/11-repaso-del-capitulo",
+          "sha256": "1eb4452b29b45b2f94931d3da6d7dddd6420ca98fd83dbd843dee5b8c92e9b98"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/11-soluciones",
+          "sha256": "397ac710880829750cddabf43eb9f300c03dbd0ce430a6a2ba30d1b75dacf3dc"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/12-repaso-del-capitulo",
+          "sha256": "8b200d3da2f29efbf7817618049905271ffbd892a55a66459433fcb17ff99b91"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/2-practica",
+          "sha256": "e3713f77faedf645abdc2130e711c3849aad79bffb41cc655177caa4f8684ee7"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/2-referencias",
+          "sha256": "f373248ea2e263cd4079c89af02ba266394032983c497c6185aa92fb0a7878e3"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/2-resumalo-todo-tarea-para-la-casa",
+          "sha256": "ae6e001887562d52f420cb0c718cb8b43bcaa57d771d71b514116370ad42a49c"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/2-tarea-para-la-casa",
+          "sha256": "b9aadbc145400db5d3272d182fca97a9e8cd8425ad3d44b9ce76a8b594f06e19"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/3-repaso-de-formulas",
+          "sha256": "418b4309616dbd474ef78cbb19b3a3afbb4375f20a9724f335aa9daf00fde40e"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/4-tarea-para-la-casa",
+          "sha256": "77b67b6fabcb367a4e6cd60a59964cd7c21810a996652961a819b47d2ead0e42"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/4-referencias",
+          "sha256": "7b622a763224013c6aade8ce4336aa43d810c1dae3e7e93780a77412247173a9"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/5-repaso-de-formulas",
+          "sha256": "eba5ab08927aa55987a8ca9d31c2b63cf5c83e49d6c0d179c076c0c7dec30002"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/5-practica",
+          "sha256": "1ad06c2064bd456489199a75e6cd5c4c2d46800a75e90aafcbf3ad2f2a6dec22"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/5-referencias",
+          "sha256": "aa66f5d5838024b54d6c772a94a3ea58aa2450cb2be2def8a9fccf745cc2951c"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/5-tarea-para-la-casa",
+          "sha256": "749313b3b8bf0febf8e67127794323ea88d0e95c2e5542b50dac286c49ed338f"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/12-repaso-de-formulas",
+          "sha256": "8b020b7a53c17b959d62e0352a51fe0320ce8b40c6391547f7b0261381bc002a"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/11-repaso-de-formulas",
+          "sha256": "4d64539633d80e9440ce5bdb31ece9314c69af50b3556a4d07d877f1387b5cef"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/11-practica",
+          "sha256": "90262cd72e40d9235f3e94a8e2639ca218fcb301962a2532d0ed8183771e8aaf"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/11-referencias",
+          "sha256": "b67a7d5f2bb8896b968f44513a346ba6781b6d012b6ec741e071f901af217364"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/11-resumalo-todo-tarea-para-la-casa",
+          "sha256": "82e850af90106bac7bf1cbba0fed2c138777c0275795ef80700657b4a832c3eb"
+        },
+        {
+          "url": "https://openstax.org/books/introducci%C3%B3n-estad%C3%ADstica-empresarial/pages/11-tarea-para-la-casa",
+          "sha256": "5c69922f4859d2a127eef8f0ae52571d7d884c47721d90f9c6e2d08dd2bb311b"
+        }
+      ],
+      "token_count": 179250,
+      "unique_word_count": 8229
+    }
+  ],
+  "sha256": "71fbd9cf10c37a5a592d63662c39519148388e480e5de45410afa3e66ba06559"
 }

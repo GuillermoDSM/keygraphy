@@ -84,12 +84,12 @@ class ProgressTests(unittest.TestCase):
         self.assertEqual(bar[3], "░")
 
     def test_uses_bundled_corpus_frequency_order(self):
-        self.assertEqual(LETTER_ORDER, "aeoirnsctdlumpbgvfóhjízáxqéyñúkwü")
+        self.assertEqual(LETTER_ORDER, "eaosnirldctumpgbvófqhíájzéyxñúkwü")
 
     def test_starts_with_six_letters_and_focuses_unsampled_letter(self):
         progress = Progress()
         self.assertEqual(progress.active_letters, LETTER_ORDER[:INITIAL_LETTERS])
-        self.assertEqual(progress.weakest_letter(), "a")
+        self.assertEqual(progress.weakest_letter(), LETTER_ORDER[0])
 
     def test_includes_next_letter_when_every_active_letter_reached_target(self):
         progress = Progress()
@@ -209,12 +209,12 @@ class ProgressTests(unittest.TestCase):
 class LessonTests(unittest.TestCase):
     def test_corpus_has_ten_thousand_frequency_ordered_words(self):
         self.assertEqual(len(WORDS), 10_000)
-        self.assertEqual(WORDS[:5], ("de", "la", "que", "el", "en"))
+        self.assertEqual(WORDS[:5], ("de", "la", "en", "el", "que"))
 
     def test_spanish_package_is_available(self):
         words = load_word_list(WORD_PACKAGES["es-la"])
         self.assertEqual(len(words), 10_000)
-        self.assertEqual(words[:5], ("de", "la", "que", "el", "en"))
+        self.assertEqual(words[:5], ("de", "la", "en", "el", "que"))
 
     def test_english_package_is_available(self):
         words = load_word_list(WORD_PACKAGES["en-us"])
@@ -223,7 +223,7 @@ class LessonTests(unittest.TestCase):
 
     def test_filter_preserves_frequency_order(self):
         eligible, focused = eligible_words("eaosrn", "e")
-        self.assertEqual(eligible[:5], ["en", "no", "se", "es", "ser"])
+        self.assertEqual(eligible[:5], ["en", "se", "es", "no", "son"])
         self.assertTrue(all("e" in word for word in focused))
 
     def test_small_word_pool_is_filled_with_pseudowords(self):
@@ -289,15 +289,16 @@ class LessonTests(unittest.TestCase):
     def test_session_keeps_the_focus_used_to_generate_its_lesson(self):
         progress = Progress()
         session = Session(progress, "era")
-        self.assertEqual(session.focus, "a")
-        progress.letters["a"] = LetterStat(
+        focus = LETTER_ORDER[0]
+        self.assertEqual(session.focus, focus)
+        progress.letters[focus] = LetterStat(
             hits=30,
             misses=0,
             time_ms=200,
             best_time_ms=200,
         )
-        self.assertEqual(progress.weakest_letter(), "e")
-        self.assertEqual(session.focus, "a")
+        self.assertEqual(progress.weakest_letter(), LETTER_ORDER[1])
+        self.assertEqual(session.focus, focus)
 
     def test_reset_discards_partial_attempt_and_statistics(self):
         progress = Progress()
