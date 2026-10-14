@@ -39,6 +39,9 @@ RESULT_COUNT_MS_PER_UNIT = 2
 RESULT_WPM_MS_PER_UNIT = 20
 PARTIAL_BLOCKS = "▏▎▍▌▋▊▉"
 SPEED_FILTER_ALPHA = 0.1
+# Physical key presses for the initial Spanish dead-key keyboard assumption.
+# These costs are independent from the selected word package.
+DEFAULT_KEY_COSTS = {**dict.fromkeys("áéíóú", 2), "ü": 3}
 MIN_WORD_POOL = 15
 MAX_FREQUENT_WORDS = 1000
 FOCUSED_WORD_RATIO = 0.5
@@ -172,10 +175,14 @@ select_word_package(DEFAULT_WORD_PACKAGE)
 
 @dataclass
 class LetterStat:
+    """Smoothed milliseconds per press, plus total character production time."""
+
     hits: int = 0
     misses: int = 0
     time_ms: float | None = None
     best_time_ms: float | None = None
+    raw_time_ms: float | None = None
+    best_raw_time_ms: float | None = None
 
     @property
     def attempts(self) -> int:
@@ -190,19 +197,28 @@ class LetterStat:
         hits: int,
         misses: int,
         average_time_ms: float | None,
+        key_cost: int = 1,
     ) -> None:
         self.hits += hits
         self.misses += misses
         if average_time_ms is None:
             return
-        if self.time_ms is None:
-            self.time_ms = average_time_ms
+        if self.raw_time_ms is None and self.time_ms is not None:
+            self.raw_time_ms = self.time_ms * key_cost
+        if self.best_raw_time_ms is None and self.best_time_ms is not None:
+            self.best_raw_time_ms = self.best_time_ms * key_cost
+        if self.raw_time_ms is None:
+            self.raw_time_ms = average_time_ms
         else:
-            self.time_ms = (
-                self.time_ms * (1 - SPEED_FILTER_ALPHA)
+            self.raw_time_ms = (
+                self.raw_time_ms * (1 - SPEED_FILTER_ALPHA)
                 + average_time_ms * SPEED_FILTER_ALPHA
             )
-        self.best_time_ms = min(self.best_time_ms or float("inf"), self.time_ms)
+        self.best_raw_time_ms = min(
+            self.best_raw_time_ms or float("inf"), self.raw_time_ms
+        )
+        self.time_ms = self.raw_time_ms / key_cost
+        self.best_time_ms = self.best_raw_time_ms / key_cost
 
 
 @dataclass
@@ -229,6 +245,37 @@ class Progress:
     book_level_attempts: int = 0
     book_level_correct: int = 0
     books: dict[str, BookPosition] = field(default_factory=dict)
+    key_costs: dict[str, int] = field(default_factory=dict)
+
+    def key_cost(self, character: str) -> int:
+        if character in self.key_costs:
+            return self.key_costs[character]
+        base = character.lower()
+        return self.key_costs.get(base, DEFAULT_KEY_COSTS.get(base, 1)) + int(
+            character.isupper()
+        )
+
+    def set_key_cost(self, character: str, cost: int) -> None:
+        if len(character) != 1 or not character.isprintable():
+            raise ValueError("El coste requiere un carácter imprimible")
+        if type(cost) is not int or not 1 <= cost <= 10:
+            raise ValueError("El coste debe ser un entero entre 1 y 10")
+        previous = {letter: self.key_cost(letter) for letter in self.letters}
+        self.key_costs[character] = cost
+        for letter, stat in self.letters.items():
+            if stat.raw_time_ms is None and stat.time_ms is not None:
+                stat.raw_time_ms = stat.time_ms * previous[letter]
+            if stat.best_raw_time_ms is None and stat.best_time_ms is not None:
+                stat.best_raw_time_ms = stat.best_time_ms * previous[letter]
+            stat.time_ms = (
+                stat.raw_time_ms / self.key_cost(letter)
+                if stat.raw_time_ms is not None else None
+            )
+            stat.best_time_ms = (
+                stat.best_raw_time_ms / self.key_cost(letter)
+                if stat.best_raw_time_ms is not None else None
+            )
+        self.reset_post_alphabet_focus()
 
     @property
     def active_letters(self) -> str:
@@ -392,6 +439,15 @@ def load_progress(path: Path | None = None) -> Progress:
         raw_letters = raw.get("letters", {})
         if not isinstance(raw_letters, dict):
             raw_letters = {}
+        cost_progress = Progress()
+        raw_costs = raw.get("key_costs", {})
+        if isinstance(raw_costs, dict):
+            for character, cost in raw_costs.items():
+                try:
+                    cost_progress.set_key_cost(character, cost)
+                except (TypeError, ValueError):
+                    continue
+        normalized_timing = raw.get("timing_version") == 1
         target_wpm = max(
             MIN_TARGET_WPM,
             min(int(raw.get("target_wpm", TARGET_WPM)), MAX_TARGET_WPM),
@@ -450,7 +506,10 @@ def load_progress(path: Path | None = None) -> Progress:
         legacy_mastered = set(LEGACY_LETTER_ORDER[: legacy_unlocked - 1])
         letters: dict[str, LetterStat] = {}
         for letter, values in raw_letters.items():
-            if letter not in letter_order or not isinstance(values, dict):
+            if (
+                letter not in letter_order + letter_order.upper() + ",.'"
+                or not isinstance(values, dict)
+            ):
                 continue
             try:
                 hits = max(0, int(values.get("hits", 0)))
@@ -478,11 +537,35 @@ def load_progress(path: Path | None = None) -> Progress:
                     best_time_ms = min(time_ms, target_time_ms)
                 else:
                     best_time_ms = time_ms
+            cost = cost_progress.key_cost(letter)
+            try:
+                if normalized_timing:
+                    total_ms = values.get("raw_time_ms")
+                    best_total_ms = values.get("best_raw_time_ms")
+                    total_ms = (
+                        float(total_ms) if total_ms is not None
+                        else time_ms * cost if time_ms is not None else None
+                    )
+                    best_total_ms = (
+                        float(best_total_ms) if best_total_ms is not None
+                        else best_time_ms * cost if best_time_ms is not None else None
+                    )
+                else:
+                    total_ms, best_total_ms = time_ms, best_time_ms
+                if any(
+                    value is not None and (value <= 0 or not math.isfinite(value))
+                    for value in (total_ms, best_total_ms)
+                ):
+                    raise ValueError
+            except (TypeError, ValueError):
+                continue
             letters[letter] = LetterStat(
                 hits=hits,
                 misses=misses,
-                time_ms=time_ms,
-                best_time_ms=best_time_ms,
+                time_ms=total_ms / cost if total_ms is not None else None,
+                best_time_ms=best_total_ms / cost if best_total_ms is not None else None,
+                raw_time_ms=total_ms,
+                best_raw_time_ms=best_total_ms,
             )
         mode = raw.get("mode", "practice")
         if mode not in MODES:
@@ -540,6 +623,7 @@ def load_progress(path: Path | None = None) -> Progress:
             book_level_attempts=book_level_attempts,
             book_level_correct=book_level_correct,
             books=books,
+            key_costs=cost_progress.key_costs,
         )
     except (OSError, ValueError, TypeError, json.JSONDecodeError):
         return Progress()
@@ -549,6 +633,8 @@ def save_progress(progress: Progress, path: Path | None = None) -> None:
     path = path or data_path()
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
+        "timing_version": 1,
+        "key_costs": progress.key_costs,
         "target_wpm": progress.target_wpm,
         "keyboard_view": progress.keyboard_view,
         "word_package": progress.word_package,
@@ -582,7 +668,7 @@ def unlock_feedback(progress: Progress) -> str:
     best = f"{stat.best_time_ms:.0f}" if stat.best_time_ms is not None else "--"
     return (
         f"actual {current} ms · mejor {best} ms · "
-        f"objetivo {progress.target_time_ms:.0f} ms"
+        f"objetivo {progress.target_time_ms:.0f} ms/pulsación"
     )
 
 
@@ -754,7 +840,11 @@ class Session:
         )
         self.attempts += 1
         is_trigger = not self.typed
-        if correct and not is_trigger and expected in LETTER_ORDER:
+        if (
+            correct
+            and not is_trigger
+            and expected in LETTER_ORDER + LETTER_ORDER.upper() + ",.'"
+        ):
             sample = self.letter_samples.setdefault(expected, LessonSample())
             sample.hits += 1
             if self.mistake:
@@ -786,12 +876,13 @@ class Session:
                 lesson_average = math.floor(
                     sample.total_time_ms / sample.timed_hits + 0.5
                 )
-                if 40 <= lesson_average <= 12_000:
+                if 40 <= lesson_average / self.progress.key_cost(letter) <= 12_000:
                     average = lesson_average
             self.progress.stat(letter).append_lesson(
                 sample.hits,
                 sample.misses,
                 average,
+                self.progress.key_cost(letter),
             )
         self.committed = True
 
@@ -1846,6 +1937,19 @@ def draw_result(
         )
     safe_addstr(stdscr, box_y + 3, box_x, bottom, attr(Theme.MUTED))
 
+    if not progress.alphabet_complete:
+        timing_label = "ms/pulsación"
+        if focus is not None:
+            cost = progress.key_cost(focus)
+            raw_ms = progress.stat(focus).raw_time_ms
+            if cost > 1:
+                total = f"{raw_ms:.0f}" if raw_ms is not None else "--"
+                timing_label += f" · {total} ms total / {cost}"
+        safe_addstr(
+            stdscr, box_y + 4, max(0, (width - len(timing_label)) // 2),
+            timing_label, attr(Theme.MUTED),
+        )
+
     if title is not None and (not blink or (ticks // 8) % 2 == 0):
         safe_addstr(
             stdscr,
@@ -2052,6 +2156,18 @@ def run(stdscr: curses.window, progress: Progress) -> None:
             return
 
 
+def parse_key_cost(value: str) -> tuple[str, int]:
+    try:
+        character, count = value.rsplit("=", 1)
+        cost = int(count)
+        Progress().set_key_cost(character, cost)
+    except (ValueError, TypeError):
+        raise argparse.ArgumentTypeError(
+            "usa CARÁCTER=N, con un carácter imprimible y N entre 1 y 10"
+        ) from None
+    return character, cost
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--version", action="version", version=f"%(prog)s {VERSION}")
@@ -2065,15 +2181,27 @@ def main() -> int:
         choices=WORD_PACKAGES,
         help="cambia y guarda el paquete de palabras",
     )
+    parser.add_argument(
+        "--key-cost",
+        action="append",
+        type=parse_key_cost,
+        default=[],
+        metavar="CARÁCTER=N",
+        help="guarda las pulsaciones necesarias para un carácter; se puede repetir",
+    )
     args = parser.parse_args()
     locale.setlocale(locale.LC_ALL, "")
     path = data_path()
     if args.reset:
         path.unlink(missing_ok=True)
     progress = load_progress(path)
+    for character, cost in args.key_cost:
+        progress.set_key_cost(character, cost)
     if args.words is not None:
         progress.word_package = args.words
     select_word_package(progress.word_package)
+    if args.key_cost:
+        save_progress(progress, path)
     try:
         curses.wrapper(run, progress)
     except KeyboardInterrupt:

@@ -9,9 +9,11 @@ multi-source language data. An `en-US` package is also available. Words are
 filtered to the currently unlocked letters. If fewer than 15 contain the focus
 letter, the remaining slots are filled with generated pseudowords.
 
-Per-letter speed is averaged over each completed lesson and smoothed with a
-0.1 factor. Progress uses the best smoothed speed ever reached, so a mastered
-letter does not unexpectedly replace the current focus. Accuracy is still
+Per-letter timing uses milliseconds per required key press. Keygraphy averages
+the total character production time over each completed lesson, smooths it with
+a 0.1 factor, and divides it by the character's key cost. Progress uses the best
+smoothed speed ever reached, so a mastered letter does not unexpectedly replace
+the current focus. Accuracy is still
 recorded and displayed, but it does not block letter progression. After every
 lesson, a compact summary shows the current and best timing for the focus. Once
 the full alphabet is active, each focus is held for three lessons, half of the
@@ -76,6 +78,36 @@ Reset all progress with:
 ```sh
 python3 keygraphy.py --reset
 ```
+
+## Timing and key costs
+
+The initial keyboard assumption uses two presses for `áéíóú` (dead accent key
+plus vowel), three for `ü` (Shift plus dead diaeresis key plus vowel), and one
+for ordinary lowercase letters, including `ñ`. Uppercase letters add one press
+for Shift: `A` costs two, `Á` three, and `Ü` four. This estimate assumes a
+separate Shift press for each uppercase character.
+
+For example, 600 ms to produce `ü` counts as 200 ms per press for the speed
+target and letter progression. Keygraphy keeps both the total and normalized
+current/best timings in the local statistics. The result screen labels letter
+timings as `ms/pulsación` and shows the total and divisor for multi-key letters.
+Exercise WPM still uses text characters and actual elapsed time.
+
+The terminal delivers composed characters rather than individual Shift and
+dead-key events. Configure costs for your physical keyboard independently of
+the word package, using repeatable overrides:
+
+```sh
+python3 keygraphy.py --key-cost 'ü=2' --key-cost 'Ü=3'
+```
+
+Each override accepts one printable character and an integer from 1 to 10.
+Keygraphy saves these overrides, recalculates existing normalized timings from
+their totals, and uses them on future runs. A lowercase override also changes
+its uppercase cost unless you set an explicit uppercase override.
+Keygraphy converts older statistics once when loading them. Corrected errors
+count toward accuracy but do not contribute speed samples; the first character
+starts the timer and has no timing sample.
 
 ## Pixel gallery
 

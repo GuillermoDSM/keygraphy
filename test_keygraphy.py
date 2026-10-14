@@ -1,4 +1,5 @@
 import json
+import argparse
 import random
 import tempfile
 import unittest
@@ -48,7 +49,9 @@ from keygraphy import (
     load_book,
     load_progress,
     load_word_list,
+    main,
     practice_text_width,
+    parse_key_cost,
     record_book_session,
     result_fraction,
     run,
@@ -323,6 +326,164 @@ class LessonTests(unittest.TestCase):
         progress = Progress()
         lesson = generate_lesson(progress, random.Random(8), target_length=120)
         self.assertEqual(len(list(wrap_ranges(lesson, practice_text_width(100)))), 2)
+
+
+class KeyTimingTests(unittest.TestCase):
+    def test_composed_and_shifted_characters_use_physical_key_costs(self):
+        progress = Progress()
+        text = "aúüUÚÜ,.\'"
+        session = Session(progress, text)
+        now = 1.0
+        session.add(text[0], now=now)
+        for character in text[1:]:
+            now += 0.2 * progress.key_cost(character)
+            session.add(character, now=now)
+        session.commit()
+        for character, cost in (("ú", 2), ("ü", 3), ("U", 2), ("Ú", 3), ("Ü", 4), (",", 1), (".", 1), ("'", 1)):
+            with self.subTest(character=character):
+                stat = progress.stat(character)
+                self.assertAlmostEqual(stat.time_ms, 200)
+                self.assertAlmostEqual(stat.raw_time_ms, cost * 200)
+                self.assertEqual(stat.hits, 1)
+        self.assertNotIn("u", progress.letters)
+        self.assertAlmostEqual(session.wpm, len(text) / 5 / ((now - 1) / 60))
+
+    def test_normalized_timing_unlocks_the_next_letter(self):
+        progress = Progress()
+        focus_index = LETTER_ORDER.index("ó")
+        for letter in LETTER_ORDER[:focus_index]:
+            progress.letters[letter] = LetterStat(time_ms=200, best_time_ms=200)
+        self.assertEqual(progress.weakest_letter(), "ó")
+        session = Session(progress, "aó")
+        session.add("a", now=1)
+        session.add("ó", now=1.6)
+        session.commit()
+        self.assertEqual(progress.stat("ó").time_ms, 300)
+        self.assertIn(LETTER_ORDER[focus_index + 1], progress.active_letters)
+
+    def test_corrected_composed_character_does_not_improve_speed(self):
+        progress = Progress()
+        session = Session(progress, "aüü")
+        session.add("a", now=1)
+        session.add("ü", now=1.6)
+        session.add("x", now=1.7)
+        session.add("x", now=1.8)
+        session.add("ü", now=1.9)
+        session.commit()
+        self.assertEqual(progress.stat("ü").time_ms, 200)
+        self.assertEqual(progress.stat("ü").raw_time_ms, 600)
+        self.assertEqual(progress.stat("ü").misses, 1)
+
+    def test_raw_and_normalized_smoothing_keep_best_and_survive_cost_changes(self):
+        progress = Progress()
+        for elapsed in (600, 300, 900):
+            session = Session(progress, "aü")
+            session.add("a", now=1)
+            session.add("ü", now=1 + elapsed / 1000)
+            session.commit()
+        stat = progress.stat("ü")
+        self.assertAlmostEqual(stat.raw_time_ms, 603)
+        self.assertAlmostEqual(stat.time_ms, 201)
+        self.assertAlmostEqual(stat.best_time_ms, 190)
+        progress.set_key_cost("ü", 2)
+        self.assertAlmostEqual(stat.time_ms, 301.5)
+        self.assertAlmostEqual(stat.best_time_ms, 285)
+        self.assertEqual(progress.key_cost("Ü"), 3)
+        progress.set_key_cost("Ü", 2)
+        self.assertEqual(progress.key_cost("Ü"), 2)
+
+    def test_short_normalized_intervals_are_not_accepted_as_speed(self):
+        progress = Progress()
+        session = Session(progress, "aü")
+        session.add("a", now=1)
+        session.add("ü", now=1.09)
+        session.commit()
+        self.assertIsNone(progress.stat("ü").time_ms)
+        self.assertEqual(progress.stat("ü").hits, 1)
+
+    def test_old_accent_timings_migrate_once_and_preserve_raw_totals(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "stats.json"
+            path.write_text(json.dumps({"letters": {
+                "ü": {"hits": 10, "time_ms": 900, "best_time_ms": 600},
+                "ó": {"time_ms": 800, "best_time_ms": 600},
+                "a": {"time_ms": 200, "best_time_ms": 180},
+            }}), encoding="utf-8")
+            progress = load_progress(path)
+            self.assertEqual(progress.stat("ü").time_ms, 300)
+            self.assertEqual(progress.stat("ü").best_time_ms, 200)
+            self.assertEqual(progress.stat("ó").time_ms, 400)
+            self.assertEqual(progress.stat("a").time_ms, 200)
+            save_progress(progress, path)
+            reloaded = load_progress(path)
+            self.assertEqual(reloaded.letters, progress.letters)
+            self.assertEqual(reloaded.stat("ü").raw_time_ms, 900)
+
+    def test_custom_cost_and_shifted_punctuation_statistics_round_trip(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "stats.json"
+            progress = Progress()
+            progress.set_key_cost("ü", 2)
+            session = Session(progress, "aüA,'")
+            for character, now in zip(session.text, (1, 1.4, 1.8, 2, 2.2)):
+                session.add(character, now=now)
+            session.commit()
+            save_progress(progress, path)
+            loaded = load_progress(path)
+            self.assertEqual(loaded.key_costs, {"ü": 2})
+            self.assertEqual(loaded.letters, progress.letters)
+            self.assertEqual(loaded.stat("ü").time_ms, 200)
+
+    def test_invalid_saved_costs_do_not_discard_valid_statistics(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "stats.json"
+            path.write_text(json.dumps({"key_costs": {
+                "ü": 2, "a": 0, "b": True, "c": 1.5, "dd": 2,
+            }, "letters": {"e": {"hits": 4, "time_ms": 200}}}), encoding="utf-8")
+            progress = load_progress(path)
+            self.assertEqual(progress.key_costs, {"ü": 2})
+            self.assertEqual(progress.stat("e").hits, 4)
+
+    def test_cli_cost_parser_accepts_overrides_and_rejects_invalid_values(self):
+        self.assertEqual(parse_key_cost("ü=2"), ("ü", 2))
+        self.assertEqual(parse_key_cost("==2"), ("=", 2))
+        for value in ("ü", "ü=0", "ü=-1", "ü=11", "ü=1.5", "ab=2", "=2"):
+            with self.subTest(value=value), self.assertRaises(argparse.ArgumentTypeError):
+                parse_key_cost(value)
+
+    def test_cli_saves_cost_before_starting_and_reuses_it_on_next_run(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "stats.json"
+            with (
+                patch("keygraphy.data_path", return_value=path),
+                patch("keygraphy.curses.wrapper") as wrapper,
+                patch("sys.argv", ["keygraphy.py", "--key-cost", "ü=2"]),
+            ):
+                self.assertEqual(main(), 0)
+                self.assertEqual(wrapper.call_args.args[1].key_cost("ü"), 2)
+            self.assertEqual(load_progress(path).key_cost("ü"), 2)
+            with (
+                patch("keygraphy.data_path", return_value=path),
+                patch("keygraphy.curses.wrapper") as wrapper,
+                patch("sys.argv", ["keygraphy.py"]),
+            ):
+                self.assertEqual(main(), 0)
+                self.assertEqual(wrapper.call_args.args[1].key_cost("ü"), 2)
+
+    def test_result_explains_normalized_time_and_total_for_composed_focus(self):
+        progress = Progress()
+        session = Session(progress, "aü")
+        session.focus = "ü"
+        session.add("a", now=1)
+        session.add("ü", now=1.6)
+        session.commit()
+        window = Mock()
+        window.getmaxyx.return_value = (18, 60)
+        with patch("keygraphy.safe_addstr") as output, patch("keygraphy.attr", return_value=0):
+            draw_result(window, session, progress, [], False, 1000)
+        texts = [call.args[3] for call in output.call_args_list]
+        self.assertIn("ms/pulsación · 600 ms total / 3", texts)
+        self.assertTrue(any("200 ms" in text for text in texts))
 
 
 class BookTests(unittest.TestCase):
