@@ -10,7 +10,8 @@ package; the sources represent Spanish across Spain and Latin America.
 The builder is `tools/build_word_corpus.py`. HTML books are crawled within the
 declared book path. PDF books are converted with `pdftotext`. Text is normalized
 to Unicode NFC, URLs and numeric footnote markers are removed, and tokens are
-restricted to Spanish letters, including `áéíóúüñ`.
+restricted to Spanish letters, including `áéíóúüñ`. Recurring English
+boilerplate and PDF extraction fragments are excluded before ranking.
 
 For each source, a word frequency is calculated as:
 

@@ -32,6 +32,8 @@ ALPHABET = set("abcdefghijklmnñopqrstuvwxyzáéíóúü")
 ALPHABET_ORDER = "abcdefghijklmnñopqrstuvwxyzáéíóúü"
 TOKEN_RE = re.compile(r"[^\W\d_]+", re.UNICODE)
 URL_RE = re.compile(r"(?:https?://|www\.)\S+", re.IGNORECASE)
+# Filter recurring English boilerplate and PDF extraction fragments.
+EXCLUDED_TOKENS = frozenset({"under", "licensed", "vol", "ción", "df"})
 IGNORED_HTML_TAGS = {
     "aside",
     "button",
@@ -247,6 +249,8 @@ def tokens_from_text(text: str) -> Counter[str]:
         raw = match.group(0)
         word = unicodedata.normalize("NFC", raw.casefold())
         if len(word) < 2 or not set(word) <= ALPHABET:
+            continue
+        if word in EXCLUDED_TOKENS:
             continue
         # Keep sentence-initial common words while dropping likely proper names.
         if raw[0].isupper() and not is_sentence_start(text, match.start()):

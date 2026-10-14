@@ -77,6 +77,21 @@ Reset all progress with:
 python3 keygraphy.py --reset
 ```
 
+## Pixel gallery
+
+The isolated speed-animation gallery is an idea board for choosing a future
+visual direction without changing the main application:
+
+```sh
+python3 pixel_gallery.py
+python3 pixel_gallery.py --snapshot --plain --example 1
+```
+
+Use `n`/`p` to change examples, `g` to open the numbered catalog, `m` to
+change palettes, `Space` to pause, `r` to reseed particles, and `q` or
+`Escape` to exit. The renderer falls back to a static plain-text snapshot when
+it cannot use terminal controls.
+
 ## Test
 
 ```sh

@@ -9,7 +9,7 @@
     "negocios": 3
   },
   "word_count": 10000,
-  "candidate_count": 52287,
+  "candidate_count": 51927,
   "minimum_source_coverage": 2,
   "scoring": {
     "per_source": "count / valid_token_count * 1,000,000",
@@ -20,7 +20,7 @@
       "word ascending"
     ]
   },
-  "letter_order": "eaosnirldctumpgbvófqhíájzéyxñúkwü",
+  "letter_order": "eaosnirldctumpgbvóqfhíájzéyxñúkwü",
   "sources": [
     {
       "id": "culturas-civilizaciones",
@@ -36,129 +36,129 @@
       "source_format": "html",
       "crawl_prefix": "/culturaycivilizaciondelospaiseshispanos/",
       "crawl_depth": 2,
-      "source_sha256": "7924c3c02d6e42776499c570b81596fcf9d26b95e8ba8e7337f431f91b18723f",
+      "source_sha256": "27eaa3f2095505a821361aba698e2f0a7f5cc98acee775f40d90edc9a8811f38",
       "text_sha256": "f51ec50b9fc4d8701b175f1fa3891ea12494efbf6f4e74eceb64b57af26b5c32",
       "page_count": 29,
       "page_hashes": [
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/",
-          "sha256": "7924c3c02d6e42776499c570b81596fcf9d26b95e8ba8e7337f431f91b18723f"
+          "sha256": "27eaa3f2095505a821361aba698e2f0a7f5cc98acee775f40d90edc9a8811f38"
         },
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/back-matter/contributors/",
-          "sha256": "1a892abfd5544a7b743e959821e435bf28eab89183f6cd0e904334bce52c5e90"
+          "sha256": "5261469548cfcb0344fa0246ac2173bb2cc070f8b498ba63ad88a672c9eb4640"
         },
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/back-matter/historial-de-actualizaciones/",
-          "sha256": "bf0ae8c9a1877e45faebb4987780cc780fb4c3bc6bb99a4b56550e5876af86a1"
+          "sha256": "ff4020ec0d8cebfa173b6c1bf0d06cfdf5280cd009bc28f31c9e6de6540015dc"
         },
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/argentina/",
-          "sha256": "f5cbcdba9bd8edbbdfd6c326b8afd020b6b5d43beb893eb4d200c451ff0b2ed9"
+          "sha256": "88346b225e0f247338c158508854c8b813800ae73583a259968fb82a2b77844f"
         },
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/bolivia/",
-          "sha256": "f0e5639a645f01cad3152f53f5b81c7d9c5a112da1366a479205bdfb7504e3fa"
+          "sha256": "fdc9c20ce450dee5d4642275559bd901bc000d5dd161a9ce2d1507a918134623"
         },
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/chile/",
-          "sha256": "6656656a22a6ed3c21b2a999b2d98dcfccc7252faf00a03a211f8836c688dadb"
+          "sha256": "a48c462ba9a1ad08d50a04ba30d3473cfed5c85a16708ac6ddaab36781a33545"
         },
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/colombia/",
-          "sha256": "a90ba13a0704711505d13be61f54324c343624a142c9fca16c5c4ec66126742c"
+          "sha256": "d82e5bba29cfac5bde509ad03ca59f45942a04e8ff59d2d3f75a355d41538a01"
         },
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/costa-rica/",
-          "sha256": "67848db21d684670b4bf60c3af2fdd89d3805e75cbce077ca295023b4953df20"
+          "sha256": "c3830429b16c597091cec90469924ed35d1d3dbc4931870943fa3971c7ec503b"
         },
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/cuba/",
-          "sha256": "811a8e0c31e88b35bc3b3d5044d64451c5585907e89daa73f9a14e3418fcab19"
+          "sha256": "d728643ebe4fde5e42c504e5531a78a26c6ab4fd65fb66ba74521326fd687773"
         },
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/ecuador/",
-          "sha256": "f7ee134d4dc7a01554828635ebd6423ea29c179751b6b5eac9a32b50acfe98c1"
+          "sha256": "f219515127970f047b39c3a0a91f61733c97becf9c67647252c39806c2098a5b"
         },
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/el-salvador/",
-          "sha256": "05e936be1b1d0e4599c4f51b042792b05b1cca32bb618ba1b1e8e5fc958287a7"
+          "sha256": "508856f1f32494301990a3f4138c112fc9f3ea4c59eba641c98703cda46e9644"
         },
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/espana/",
-          "sha256": "2aec3af84015105b5688561d51297a60757cc9ac3dde271fd17e7227fe5f42b5"
+          "sha256": "66b50780a741928984a1153b3c539f531e60a955a077680d11356420eb85ca50"
         },
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/estados-unidos/",
-          "sha256": "6052df8d2c280204e93128243dbb2cd9cee61d7498ec17cf6a3aa0efff6409f8"
+          "sha256": "0a0dd877298e5489169418223132871f9a46008720ebcf1c7bebab52452eb77d"
         },
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/guatemala/",
-          "sha256": "588adc0920df65ebe458da818f0e5a65092eff1901f195a7772aebb3c3d1c22a"
+          "sha256": "02dc4585e80b2c8b1ab915b4826fe50075ff998954ea7ddfc6922b001c4e08b8"
         },
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/guinea-ecuatorial/",
-          "sha256": "b89afdc3bdbc771bf6d41b287c5a15009cb9688255a3b8986ae7c1dd53b135a7"
+          "sha256": "059e08140543eace9b0cc18f62200e06d48b20a3bb0cbe614b2303b4752cb96e"
         },
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/honduras/",
-          "sha256": "7bf62dcf19c102a2fd880ad71084368bde4e32f7bfa2acbd259e3f816ce3ba50"
+          "sha256": "a5065cd8d0a916dcc873a47faf444e85fcacd82c40c65ba7f96f7b06dbca1ff3"
         },
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/mexico/",
-          "sha256": "e219a0761936e27b7a81cbe7854dffbd7b46d63d99e3da42f0d1699e78202f42"
+          "sha256": "b3f7f8adcb0ea01313c146e662093fc5b64881701926bb441787bd413726ee10"
         },
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/nicaragua/",
-          "sha256": "9e5a3462e7a2677a2bb78130660f9e9a4d885a8fb9e56c6648f9b96915e72b5a"
+          "sha256": "55e920b405330068adfe806deee47b67e57fb555198bc7fbfc7afa60146bab92"
         },
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/panama/",
-          "sha256": "f22c01b56d5608ca23259776e74163aba9f4948b8aef68e0438bd9ae9f9fa2db"
+          "sha256": "c510c0c1c3fce2ace0b79b6fcbf76f64b66063ce10b951a1e12c2a7b25c6f4e4"
         },
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/paraguay/",
-          "sha256": "a4a2705d2b9432b5d572b0cc3d434c8586ebcdc8c9f3c6d28ca6c008b5db3189"
+          "sha256": "e9d005a7dc1430a7ae6240cd8a416f4cd7411e5c7e6a44de05549c0b7f106e49"
         },
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/peru/",
-          "sha256": "e746e7ee85d81444d35c698865c36a929207ac561d28c0a6db54d0867dea6949"
+          "sha256": "b5b15c395a6e71c899228152c314d1e8fd1b2c80ba5e20965c74b1e65e46f366"
         },
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/republica-dominicana/",
-          "sha256": "343344f6c7713ca524b12ef054d6ef53b5ca17ee40a6c58e1d4e143eca3f8579"
+          "sha256": "7e87c36b1434d24d33fbe2a20b4d0cc63becafe7bab5c4e2e03ff7afabde864e"
         },
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/uruguay/",
-          "sha256": "df8783840340fd282f34494984b4581c9eeb33a7bee179d93856f44a1af044e3"
+          "sha256": "d59a458bb696177ed217f694bf9d25c3ee36ffb1ffaf8a99facbf10a09140860"
         },
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/chapter/venezuela/",
-          "sha256": "e09e9158e7faeb5418b6a2d37d67d68d187f198715d431c944e53a858e78e214"
+          "sha256": "6e8859a0e706ecc98c8f5b35ac218129e3fda5928ec6cb7f7db257370d0efaea"
         },
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/front-matter/declaracion-de-accesibilidad/",
-          "sha256": "65f3315bc651aae6e204f268188a766c338fc2d80decef22c6d9066c84433946"
+          "sha256": "3791da875f5a214f1a0996f831aca50c86aa295806645c380428b1704a361ca2"
         },
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/front-matter/dedicacion/",
-          "sha256": "f5407ffd91bef38e27b897edf638b09e6d246ed312f11c36e7e7c6c1cd65695b"
+          "sha256": "0d619acadcba3294ec683f1ea2a7800aab593cf270f9ea7cc11419f32435fa47"
         },
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/front-matter/introduccion/",
-          "sha256": "12e6ea98169d64d9e0f627a5265f00d50d2e5ac390b17ea059adf8758501e760"
+          "sha256": "1489b246037e1f0e6c7617e839516d47025ffc1e5817a9545fb0d6a7acfc6545"
         },
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/front-matter/nota-del-editor/",
-          "sha256": "c848fdb991a257977aec7be604d38e912976657c1764466b5f1468d7b01f8183"
+          "sha256": "5ea081e8c7c9092f725a7cdc042e2509e23cebb11a9c542caadd282111e4fbc1"
         },
         {
           "url": "https://pressbooks.palni.org/culturaycivilizaciondelospaiseshispanos/front-matter/prefacio/",
-          "sha256": "b8a7635709b6a228ea65d0ccdf487e21535a1acf4bbabb87501ba8b538e8de27"
+          "sha256": "17cea7cc3b6671cb99ee670076b709a22d5277721321e849c9a0a3579861a043"
         }
       ],
-      "token_count": 79028,
-      "unique_word_count": 10066
+      "token_count": 77017,
+      "unique_word_count": 9947
     },
     {
       "id": "historia-didactica",
@@ -176,8 +176,8 @@
       "text_sha256": "33d2348539acbfa278c8766351c3f84233353c0bc89e9e7fae09045b8a1f9e10",
       "page_count": null,
       "page_hashes": [],
-      "token_count": 43396,
-      "unique_word_count": 7789
+      "token_count": 41693,
+      "unique_word_count": 7567
     },
     {
       "id": "edad-moderna-ensenanza",
@@ -195,8 +195,8 @@
       "text_sha256": "ea0788184bcd141598bdfdb20c5401ce2ce458e4ca8ba7527bf9a567abe11edc",
       "page_count": null,
       "page_hashes": [],
-      "token_count": 205776,
-      "unique_word_count": 20170
+      "token_count": 202557,
+      "unique_word_count": 19907
     },
     {
       "id": "cien-anos-platero",
@@ -214,8 +214,8 @@
       "text_sha256": "3c2e4fb0132436646e6a135287f395b1f8ae5c23cf43100dc653caaa6f9a9929",
       "page_count": null,
       "page_hashes": [],
-      "token_count": 132317,
-      "unique_word_count": 17500
+      "token_count": 130676,
+      "unique_word_count": 17350
     },
     {
       "id": "genio-ingenio-poeta-judeo-andaluz",
@@ -233,8 +233,8 @@
       "text_sha256": "495bc91febbcdcc0642a39ac1db444d5b63583114eb9afd042793a124404ca5a",
       "page_count": null,
       "page_hashes": [],
-      "token_count": 141978,
-      "unique_word_count": 19149
+      "token_count": 140958,
+      "unique_word_count": 19023
     },
     {
       "id": "poeta-y-mar",
@@ -252,8 +252,8 @@
       "text_sha256": "11c92034ebc67ea4a7871c99f57cd2bfdd0d22ec8ff47c759edb67ed9910805b",
       "page_count": null,
       "page_hashes": [],
-      "token_count": 69102,
-      "unique_word_count": 11557
+      "token_count": 68440,
+      "unique_word_count": 11423
     },
     {
       "id": "introduccion-negocios",
@@ -269,105 +269,105 @@
       "source_format": "html",
       "crawl_prefix": "/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_%28OpenStax%29/",
       "crawl_depth": 1,
-      "source_sha256": "27a7dab8d190a3b9862b3fdcdae40056b064eecf915f27ec170750a5cd243cc0",
+      "source_sha256": "c6a28c0f616b718862dd246c6d34da89b95dbfd70bec89594bb4775e7ab78a05",
       "text_sha256": "d8287fd32c217b1aa985ee288f3a510498ecaa31a1ff180802ecc2858b6d4289",
       "page_count": 23,
       "page_hashes": [
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_%28OpenStax%29",
-          "sha256": "5c52f2fe923e52d007c709fd0872805fc177d53fa7e05390a635ebdc7a6ab234"
+          "sha256": "e50ec29600e6a81be8ead8d6db36ddfa48e3081f2278c850381a3dbe4916a776"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/00%3A_Front_Matter",
-          "sha256": "62f2b3b7e2c1e7198396f71d231cb9dbfae99e135157cf478e133e430cb8a9d8"
+          "sha256": "ef6d83aa9eb987f1bb335c5d246028781a9d0ecfae56a6906bf569240ccb98d7"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/00%3A_Materia_Frontal",
-          "sha256": "8fc8d5134628e7c759bb5d350965a394b467473b1e042e70688b1f95b1a39ae5"
+          "sha256": "1564dd9cd282495d83e6e83a7270b46aa274de5e7c33742c2682886cd9ebdd9c"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/01%3A_Comprender_los_sistemas_econ%C3%B3micos_y_los_negocios",
-          "sha256": "9941050123df95aa6578531436bf996605a9610a1088099665c2f072c8b77930"
+          "sha256": "4618dfb9b2c3d844f5945862ea47ecdb4cdf461cf5792b10a969c78fb55c7f43"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/02%3A_Tomar_decisiones_%C3%A9ticas_y_gestionar_un_negocio_socialmente_responsable",
-          "sha256": "9601a5bf2125742072abcf8930b097456c72516a409c177ca51a2b28cf2e631b"
+          "sha256": "d32eb86b9f784df21ecaa03709a2dda26e187fc10c46490a3c8862e02f9e3b6a"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/03%3A_Competir_en_el_mercado_global",
-          "sha256": "6c4810a0a86460a802c57bf6b61889b880a7de7f41c11880e3c8bc606fad8ef3"
+          "sha256": "26aeff35d907c0f2055cc8455bb403e893c2dcb0fa39f5a2c4b6777989008f75"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/04%3A_Formas_de_propiedad_del_negocio",
-          "sha256": "6ab23a6dd07bfe5db421f1719024f16e37f16530527b19c8c4898c0ca1ff843c"
+          "sha256": "81a4963a80ef901fcbcc13f600f60a84766999a5c50c70cd6e4007600d7c9e1d"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/05%3A_Emprendimiento-_Inicio_y_Gesti%C3%B3n_de_Tu_Propio_Negocio",
-          "sha256": "f5027ce46263fa34ab9b007f2c51b8620714ec3ba521b386fdb676922c70ced9"
+          "sha256": "be5234077954b5ccc4a585470259e9a37751b03ef4b1ae3bf3973686e9be93ad"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/06%3A_Gesti%C3%B3n_y_Liderazgo_en_las_Organizaciones_de_Hoy",
-          "sha256": "47b7bc9e0f9f94daca446e0c7d2f94871117350b30b8d59b422d00eb2eb36524"
+          "sha256": "a127a28ebe2d2cd32451182f6617119fc531bedc5cd1fd6630a7a87d4641ff31"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/07%3A_Dise%C3%B1o_de_estructuras_organizacionales",
-          "sha256": "08a07375997b9ff61bbddfa6072a12c8fe95d8121fb59431e699086241a78b33"
+          "sha256": "6a7271535699daad13b441629e2da00f1d802d5786abbd7bfdb6fe5eea30e2d9"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/08%3A_Gesti%C3%B3n_de_Recursos_Humanos_y_Relaciones_Laborales",
-          "sha256": "b54c7eb5775491fe98b11dde02b213c31ca86da430ed30e8046bc470db0604d1"
+          "sha256": "a9e6f667fa86b1172dc9840d204a11f7553aaf076a66937d81be40e7966219f2"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/09%3A_Motivar_a_los_empleados",
-          "sha256": "38f52b3f11d92cf46599face28d5125a47cb725f26d3a46dd4982600374cf3c2"
+          "sha256": "33d671f21476a88cecccadbf68063293f75f73ee1147536b4a6e4443607916d0"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/10%3A_Lograr_una_Gesti%C3%B3n_de_Operaciones_de_Clase",
-          "sha256": "49f5e650fba2ed0c0121fce24203a3b7ebd251f0974e28dfcecf7ecacd41e653"
+          "sha256": "80d3c601b25107b01b05c2c21eb15d10ac4d59f7c833839745c5a2465c2f5fc4"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/11%3A_Creaci%C3%B3n_de_productos_y_estrategias_de_precios_para_satisfacer_las_necesidades_de_los_clientes",
-          "sha256": "8465d744a5775a34c5f52b632ffe3a951f3247c00e2175f09ac5a2b920a1dca5"
+          "sha256": "cdf7a30df300b28a9dcfd4d2a4de22ac8f28a28fc5c50c80a497007706600bb2"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/12%3A_Distribuir_y_promover_productos_y_servicios",
-          "sha256": "2c383e1ad3be0dc23e58af31754f35e5f795d3336c54a7598f4630da14203dc3"
+          "sha256": "f9f6a9bfd8c7575eb5a748fdcafddb2c74a97bb4e8ff2d4045fcb1622e9f2086"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/13%3A_Uso_de_la_tecnolog%C3%ADa_para_administrar_la_informaci%C3%B3n",
-          "sha256": "9bf86400e58d68d23571e7138e11c19483bf7ee0720fd29658c2b99b0407bd08"
+          "sha256": "540fe6ed3f4b28fe1ed0cf7f39be621a58fb757412948d19f3f4c804830b0299"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/14%3A_Uso_de_la_informaci%C3%B3n_financiera_y_la_contabilidad",
-          "sha256": "244d2cd42a40c19da272af7fe0824db9abe38f5d892d0307a5cf75e700df3c4d"
+          "sha256": "b7c5841c9bcd2e484ac7e4985e5f7fe6298408c7a5cf4806b5b02210ecaacfeb"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/15%3A_Comprender_el_dinero_y_las_instituciones_financieras",
-          "sha256": "0645641f8f57b1b5c0b861d700b895149c9ff0956a8820c5368871d2bfbbf5a7"
+          "sha256": "7908403a18769e92a5571ea4eb7f1c64f0d2f12c1fddd8b3f17188814190d19a"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/16%3A_Comprensi%C3%B3n_de_la_gesti%C3%B3n_financiera_y_los_mercados_de_valores",
-          "sha256": "806801e5eb8b519e122bbeb0987d091445b8e11251525af235a251bf2e057d0a"
+          "sha256": "8516f6114a1a250afeab5d72de77f78dc0b6bb5a7f5126badf6cf59c068fa923"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/17%3A_Tu_Carrera_en_Negocios",
-          "sha256": "e444ec9f5b354719b62ce6483ce6987958f2f0229cea10524a08bd7a415edc09"
+          "sha256": "e128e580a3350ff2abf704252f00bba56c50266c47096df22ecbfaed5f63b5af"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/18%3A_Ap%C3%A9ndice_-_Entendiendo_el_Entorno_Jur%C3%ADdico_y_Fiscal",
-          "sha256": "5cb31a7d2b39bf682db5b3d89985b845e0084c6c79371a8a2c290576267670d7"
+          "sha256": "272bb04c9fd20132531b69b04eda9ff08db4f1f3eede402bf526373ac89d0c91"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/zz%3A_Back_Matter",
-          "sha256": "ae86c4a2a19ff6ce7121c5f2fb5de8a593688d02f0f2e99d3ef5841443805656"
+          "sha256": "df27416ed2765238ee553e714ec93c918d39c813af15f5228976dc9d0490cfc9"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Negocio/Negocios/Negocio_Introductorio/Libro%3A_Introduccion_a_los_Negocios_(OpenStax)/zz%3A_Volver_Materia",
-          "sha256": "029f61fbbccf3d04add106c1b03c68725ee28f7854d1a3ed9858b3206059794d"
+          "sha256": "e85f9468d7a256661006aadda6807533d227c728ebc498143adde5eb276f142d"
         }
       ],
-      "token_count": 7522,
-      "unique_word_count": 1992
+      "token_count": 7515,
+      "unique_word_count": 1988
     },
     {
       "id": "macroeconomia",
@@ -383,121 +383,121 @@
       "source_format": "html",
       "crawl_prefix": "/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_%28OpenStax%29/",
       "crawl_depth": 1,
-      "source_sha256": "d7206e572c7ef62f9b7badff93ddc56c104244381e895f664f5934dcb80be91c",
+      "source_sha256": "93f7eda771ce05cb0f731bd53e4bebbb5abf8cea2a7eb68b046e20cef552f9f4",
       "text_sha256": "728b71c1ff1a937122397eb3d8310ab2b0de3456d23c29ba11a1bedb1404bffa",
       "page_count": 27,
       "page_hashes": [
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_%28OpenStax%29",
-          "sha256": "f75577e5f1d1fac125301e336b034d5eb743e2ad11d7d2f6fc6c8a4bbad86e5e"
+          "sha256": "0e8171578b53cb57b172cb998b0c0f72dd90faa344da9d69ccf8c6d92db7bebb"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/00%3A_Front_Matter",
-          "sha256": "5ffdd3ca38ac836bfc759a5002dbd10ed3337834a53a8e930bd7b3968226f8ea"
+          "sha256": "13bdf764e345710176a97f033c8d2cb4760c01b42fed134ae6fa8330cda61e68"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/00%3A_Materia_Frontal",
-          "sha256": "9cd0906eaa5941a46b7a97c6eac0b4c2c9826b3d28642353ef3bbf5304b85499"
+          "sha256": "d928a65c8fd8239383b92ba5e1b484660d0062afddd61433641d77000c17a02a"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/01%3A_Bienvenido_a_Econom%C3%ADa",
-          "sha256": "33b14ed1a27c730e904831d9c4cf5b368a4058955001566c9996a63c574a1c79"
+          "sha256": "544debcf0c381c2c816703160be4aeef401845b5bce762d388106014a7ba9d7a"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/02%3A_Elecci%C3%B3n_en_un_mundo_de_escasez",
-          "sha256": "21dae565dd528e69d62359266d0aba8dfb5118c7de9fda182bd1c0f64af78238"
+          "sha256": "e4f7eb909ce213da463865aea7f96b1701cad44512fda84a001b0cb9f90a66e0"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/03%3A_Demanda_y_oferta",
-          "sha256": "01f4c9c910a8b82f923649bc52322f6fd86c88d791d821d3bf551f0dc4397726"
+          "sha256": "88218aa33ca7b3b9dbc924283716d2a5a4139d21b87e6b4782f4b9dcce2f1e5a"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/04%3A_Mercados_Laborales_y_Financieros",
-          "sha256": "12bd46dcc1f163d8251a6801848a939b4da0bf9aa7fe3f81b8d029f3ec684704"
+          "sha256": "59590ef31a37cc207688cb232128043a94ab1fc36b2c56c63d7fe1050e90ca7f"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/05%3A_Elasticidad",
-          "sha256": "9ce055bcdeba4c232a49adc4eb60f12722958489aba67e777a26f42151f83dcb"
+          "sha256": "a900f7c798f3f670b6f460ab4c5108f1c71d832339fb22f9a39021514177b016"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/06%3A_La_perspectiva_macroecon%C3%B3mica",
-          "sha256": "36c76184876f5baf62df4eaa039c42d093df243ec2ff5ede9ee340e2dd95a9d0"
+          "sha256": "e0e3b38eed306eb8f8440a615fc26b0a8f480858b7d452d05b9e32fc754e741b"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/07%3A_Crecimiento_econ%C3%B3mico",
-          "sha256": "b53884c8562c763fcda5ccc04e0ffea8c3818e4f4d7a6334b947ed8aecec55ae"
+          "sha256": "229808797092b517d0c6b3576a6ae1f3ee6f50868b5f84cb382fe8249435046a"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/08%3A_Desempleo",
-          "sha256": "d24d49f75ff6a45afe292ee9977113fc92c45f10784228a0d5152dac8994b7ba"
+          "sha256": "e29f60aeec822be7acc4f3f23da9cba61e25bf17f20c95a10ffc08dee0b3ce1b"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/09%3A_Inflaci%C3%B3n",
-          "sha256": "4d6a4e8e1b7e6436e898c4655f43ca3c26ea200e46f189174d009587817c22f2"
+          "sha256": "434286c13dd44e35ee4cdc69ef77791ec733393efd4409c5653f42806dc969b4"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/10%3A_El_comercio_internacional_y_los_flujos_de_capital",
-          "sha256": "0b7f15e18232c5055dfce7dcc8545c0e568dd024941f3e476f86287ad0a74eb2"
+          "sha256": "0c0b7fad74299765f590630e887fca87d2bdfe40e709782b297e3be5aa7750dc"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/12%3A_La_perspectiva_keynesiana",
-          "sha256": "ee02d8bbff824fda0a40ebeef36b004b6c5b41375a88acf36b19d6e244099c47"
+          "sha256": "e50e6b2ab76dad4c93e1caa7f17f1fae677a0836cc7e0b95f10717436f2cb585"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/13%3A_La_perspectiva_neocl%C3%A1sica",
-          "sha256": "a472fd2289f5c6aa52c2a68f98bd68ddbd86164adba846576ecba7702103e021"
+          "sha256": "41d70151a90961317d8e84f1507d6c322187e696b3c413bbbed8b22dbe7dd7cb"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/14%3A_Dinero_y_Banca",
-          "sha256": "9ba1270fa4c52fa21d01bdd77f696ab77448f7342f446e2155283043c3572aa7"
+          "sha256": "1fd019ab5cbed5790f19292d211d32f78109e0387c853008ab77f173c221cd9e"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/15%3A_Pol%C3%ADtica_Monetaria_y_Regulaci%C3%B3n_Bancaria",
-          "sha256": "37fca4100094ec384979054e66859ac5b7b09b89c2b978d8b167caf8106261d8"
+          "sha256": "6164e3982e8fd2c06fc963a4d471cb77c738e1c7c2c6b97aeeb6945bd6ee5b04"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/16%3A_Tipos_de_cambio_y_flujos_internacionales_de_capital",
-          "sha256": "7ffdb1a4efda9a367f8a07883780f3d71de13979fe43ba18c40be21d81788f81"
+          "sha256": "cbb11d97eaabc8da9e76534237275fd3ac30b608493dfef7fd30d1f8a8002441"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/17%3A_Presupuestos_Gubernamentales_y_Pol%C3%ADtica_Fiscal",
-          "sha256": "486f97f49e48e7160d1757f63dbeb0f3e35aea37c5514254a5d26347a583061a"
+          "sha256": "5aef67cafdaf4143324c2de9d98d94fed96768bb7e71644486998f4af8d96a1c"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/18%3A_Los_impactos_de_los_pr%C3%A9stamos_gubernamentales",
-          "sha256": "924b932f9bb2c9b7284ed15aa3684a657157db21efaa43c954105b56c0934936"
+          "sha256": "3225fcff9a2d0080be79c4472e7c616fb61f717da4e27d038b709b6da22b354a"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/19%3A_Pol%C3%ADtica_macroecon%C3%B3mica_en_todo_el_mundo",
-          "sha256": "2e17895a07348f8ad4adf264a6fdf1ef13eb3c4ba0d8b86ce3f4e5fbcbd0e205"
+          "sha256": "edefc988ed4570b690d451ed450139232675c1bafb62d1c17e7f4ce1cd0d7c2b"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/20%3A_Comercio_Internacional",
-          "sha256": "7b8a633c890cc5d0d3d2ff0b75325c8161111eb532337aa7ec2d386dd8e14791"
+          "sha256": "e9adfaab8d89bd692a3a9d0d079917a7d0a5376cc30554d8d3acc585d5480393"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/21%3A_Globalizaci%C3%B3n_y_proteccionismo",
-          "sha256": "295924beb292f5840b27ae2fd9541bf5da9cabe90e233a775399e9ae991079b2"
+          "sha256": "c1241f9cf6c9d189fea59b293c421acb03764679e47cc68b5a87fa2a213bc25c"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/El_modelo_de_gasto_y_salida",
-          "sha256": "912c063e1b81fa58206cc29e1c16f837610e01ffe859aa97790e65d22ba9bb0b"
+          "sha256": "82b950274912f9504a98c4886598f0b25cad5431c160a64c687baebecfa86a37"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/El_uso_de_las_matem%C3%A1ticas_en_los_principios_de_la_econom%C3%ADa",
-          "sha256": "a7ab24edd523326c706550db578c0246d675d1539695e65d4a54e42008007f89"
+          "sha256": "1f38f7775e1455d31a96cfae2372556e67e443dfd91957ee8feaa90598686d29"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/zz%3A_Back_Matter",
-          "sha256": "9b1e78160a5e2cb4be55b8054a695588173184b7148996e9394673402f6d686a"
+          "sha256": "909a17006c20e97c0469d82cd530fc0fa82d02c80e285cb48cc41455ceb5a627"
         },
         {
           "url": "https://espanol.libretexts.org/Bookshelves/Ciencias_Sociales/Economia/Libro%3A_Macroeconomia_(OpenStax)/zz%3A_Volver_Materia",
-          "sha256": "0511301355fed0ee15249e7a1369f9713e41fc340276f3ed7094bd3145821b73"
+          "sha256": "170e94391a838e3154ae80e58906e59a81ab3cb8d90324a529f82e42098c7aac"
         }
       ],
-      "token_count": 14602,
-      "unique_word_count": 1908
+      "token_count": 14566,
+      "unique_word_count": 1888
     },
     {
       "id": "estadistica-empresarial",
@@ -1195,9 +1195,9 @@
           "sha256": "5c69922f4859d2a127eef8f0ae52571d7d884c47721d90f9c6e2d08dd2bb311b"
         }
       ],
-      "token_count": 179250,
-      "unique_word_count": 8229
+      "token_count": 178363,
+      "unique_word_count": 8160
     }
   ],
-  "sha256": "71fbd9cf10c37a5a592d63662c39519148388e480e5de45410afa3e66ba06559"
+  "sha256": "41663cba948aff117abd87c885ec5f2c71ac6b86182981f864d16886743e8632"
 }

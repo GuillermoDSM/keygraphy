@@ -23,7 +23,7 @@ APP_NAME = "keygraphy"
 VERSION = "0.4.0"
 LETTER_ORDER = ""
 LETTER_ORDERS = {
-    "es-la": "eaosnirldctumpgbvófqhíájzéyxñúkwü",
+    "es-la": "eaosnirldctumpgbvóqfhíájzéyxñúkwü",
     "en-us": "eiasnrtolcdpumghbyfvwkxjqz",
 }
 LEGACY_LETTER_ORDER = "eaosrnidlctumpbgvyqhfzjxkwñ"
@@ -1653,6 +1653,44 @@ def bar_for(fraction: float, length: int) -> str:
     return "".join(cells)
 
 
+def result_gauge_value(elapsed: float) -> float:
+    elapsed = max(0.0, elapsed)
+    ramp = 1 - math.exp(-elapsed * 7)
+    vibration = 0.009 * math.sin(elapsed * 35) + 0.004 * math.sin(elapsed * 73.5)
+    return ramp * (0.96 + vibration * ramp)
+
+
+def result_gauge_rows(rows: int, elapsed: float) -> list[str]:
+    """Rasterize a circular dial into Braille cells, without ANSI escapes."""
+    columns = rows * 2
+    width, height = columns * 2, rows * 4
+    bits = [[0] * columns for _ in range(rows)]
+    dot_bits = ((1, 8), (2, 16), (4, 32), (64, 128))
+    cx, cy = (width - 1) / 2, (height - 1) / 2
+    radius = min(cx, cy) - 1
+
+    def dot(x: float, y: float) -> None:
+        ix, iy = round(x), round(y)
+        if 0 <= ix < width and 0 <= iy < height:
+            bits[iy // 4][ix // 2] |= dot_bits[iy % 4][ix % 2]
+
+    def radial(angle: float, inner: float, outer: float) -> None:
+        steps = max(1, math.ceil((outer - inner) * 2))
+        for step in range(steps + 1):
+            distance = inner + (outer - inner) * step / steps
+            dot(cx + math.cos(angle) * distance, cy + math.sin(angle) * distance)
+
+    for step in range(max(48, round(radius * 8))):
+        angle = step / max(48, round(radius * 8)) * math.tau
+        dot(cx + math.cos(angle) * radius, cy + math.sin(angle) * radius)
+    start, sweep = math.pi * 0.75, math.pi * 1.5
+    for tick in range(13):
+        radial(start + sweep * tick / 12,
+               radius * (0.7 if tick % 3 == 0 else 0.82), radius)
+    radial(start + sweep * result_gauge_value(elapsed), 0, radius * 0.7)
+    return ["".join(chr(0x2800 + cell) if cell else " " for cell in row) for row in bits]
+
+
 def draw_result(
     stdscr: curses.window,
     session: Session,
@@ -1676,20 +1714,38 @@ def draw_result(
         return
 
     target = progress.target_time_ms
-    focus = session.focus
+    focus = None if progress.alphabet_complete else session.focus
     start_y = max(2, (height - 9) // 2)
     elapsed_ms = ticks * RESULT_FRAME_MS
+    celebrate = bool(unlocked or hi_score)
+    column_width = 10
+    gauge_height = 0
+    if celebrate:
+        gauge_height = min(height - 2, (width - 1) // 2)
+        gauge_width = gauge_height * 2
+        gauge_x = min(
+            width - gauge_width - 1,
+            max(0, round(width * 0.75 - gauge_width / 2)),
+        )
+        gauge_y = (height - gauge_height) // 2
+        focus_y = start_y - 1
+    else:
+        focus_y = start_y
 
     title: str | None = None
     blink = False
-    if progress.alphabet_complete:
-        title = "· ALFABETO COMPLETO ·"
-    elif unlocked:
-        title = "· LETTER UNLOCKED ·"
+    if unlocked:
+        title = (
+            "· ALFABETO COMPLETO ·"
+            if progress.alphabet_complete
+            else "· LETTER UNLOCKED ·"
+        )
         blink = True
     elif hi_score:
         title = "· NEW RECORD ·"
         blink = True
+    elif progress.alphabet_complete:
+        title = "· ALFABETO COMPLETO ·"
 
     if progress.alphabet_complete:
         current_wpm = session.wpm
@@ -1740,16 +1796,25 @@ def draw_result(
             f"{animated_target_ms:03d} ms",
         )
 
+    if celebrate:
+        for row, text in enumerate(result_gauge_rows(gauge_height, elapsed_ms / 1000)):
+            safe_addstr(
+                stdscr,
+                gauge_y + row,
+                gauge_x,
+                text,
+                attr(Theme.ACCENT, curses.A_DIM),
+            )
+
     if focus is not None:
         safe_addstr(
             stdscr,
-            start_y,
+            focus_y,
             max(0, (width - 3) // 2),
             f"[{focus}]",
             attr(Theme.ACCENT, curses.A_BOLD),
         )
 
-    column_width = 10
     inner_width = column_width * len(labels) + 6
     box_x = max(1, (width - inner_width - 2) // 2)
     box_y = start_y + 2
@@ -1849,6 +1914,7 @@ def run_practice_session(stdscr: curses.window, progress: Progress) -> str:
         progress.stat(session.focus).best_time_ms if session.focus else None
     )
     session_wpm = session.wpm
+    previous_best_wpm = progress.best_wpm
     session.commit()
     progress.record_lesson_focus(session.focus)
     if progress.alphabet_complete:
@@ -1864,6 +1930,8 @@ def run_practice_session(stdscr: curses.window, progress: Progress) -> str:
             and current_best is not None
             and current_best < previous_best
         )
+    if progress.alphabet_complete and session_wpm > previous_best_wpm:
+        hi_score = True
     save_progress(progress)
     return run_result(stdscr, session, progress, unlocked, hi_score)
 

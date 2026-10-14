@@ -84,7 +84,7 @@ class ProgressTests(unittest.TestCase):
         self.assertEqual(bar[3], "░")
 
     def test_uses_bundled_corpus_frequency_order(self):
-        self.assertEqual(LETTER_ORDER, "eaosnirldctumpgbvófqhíájzéyxñúkwü")
+        self.assertEqual(LETTER_ORDER, "eaosnirldctumpgbvóqfhíájzéyxñúkwü")
 
     def test_starts_with_six_letters_and_focuses_unsampled_letter(self):
         progress = Progress()
@@ -885,6 +885,71 @@ class ModeSwitchTests(unittest.TestCase):
 
 
 class ResultTests(unittest.TestCase):
+    def test_celebration_gauge_only_for_unlock_or_record_and_sits_behind_scores(self):
+        progress = Progress()
+        session = Session(progress, "casa")
+        for height, width in ((10, 42), (18, 60), (24, 80)):
+            for unlocked, record in (([], False), (["t"], False), ([], True), (["t"], True)):
+                with self.subTest(size=(height, width), unlocked=unlocked, record=record):
+                    window = self._window()
+                    window.getmaxyx.return_value = (height, width)
+                    with patch("keygraphy.safe_addstr") as output, patch("keygraphy.attr", return_value=0):
+                        draw_result(window, session, progress, unlocked, record, 0)
+                    calls = [call.args for call in output.call_args_list]
+                    gauge_calls = [
+                        call
+                        for call in calls
+                        if any("\u2801" <= c <= "\u28ff" for c in call[3])
+                    ]
+                    self.assertEqual(bool(gauge_calls), bool(unlocked or record))
+                    if unlocked or record:
+                        self.assertEqual(
+                            len(gauge_calls), min(height - 2, (width - 1) // 2)
+                        )
+                        score_top = next(call for call in calls if call[3].startswith("┌"))
+                        gauge_left = min(call[2] for call in gauge_calls)
+                        gauge_right = max(call[2] + len(call[3]) for call in gauge_calls)
+                        gauge_top = min(call[1] for call in gauge_calls)
+                        gauge_bottom = max(call[1] + 1 for call in gauge_calls)
+                        gauge_width = max(len(call[3]) for call in gauge_calls)
+                        gauge_center = gauge_left + gauge_width / 2
+                        scores_left = score_top[2]
+                        scores_right = scores_left + len(score_top[3])
+                        self.assertAlmostEqual(gauge_center / width, 0.75, delta=0.05)
+                        self.assertGreater(gauge_right, scores_left)
+                        self.assertLess(gauge_left, scores_right)
+                        self.assertLess(gauge_top, score_top[1] + 4)
+                        self.assertGreater(gauge_bottom, score_top[1])
+                    for _, y, x, text, *_ in calls:
+                        self.assertTrue(0 <= y < height)
+                        self.assertTrue(0 <= x and x + len(text) < width)
+                        self.assertNotIn("\x1b", text)
+                    self.assertTrue(any("CURRENT" in call[3] for call in calls))
+
+    def test_gauge_accelerates_then_holds_redline(self):
+        from keygraphy import result_gauge_rows, result_gauge_value
+
+        self.assertEqual(result_gauge_value(0), 0)
+        self.assertGreater(result_gauge_value(0.4), result_gauge_value(0.1))
+        values = [result_gauge_value(t / 100) for t in range(100, 1000)]
+        self.assertTrue(all(0.94 < value < 0.98 for value in values))
+        self.assertGreater(max(values) - min(values), 0.01)
+        self.assertNotEqual(result_gauge_rows(8, 0), result_gauge_rows(8, 1))
+
+    def test_completed_alphabet_record_still_celebrates(self):
+        progress = Progress()
+        for letter in LETTER_ORDER:
+            progress.letters[letter] = LetterStat(time_ms=200, best_time_ms=200)
+        session = Session(progress, "casa")
+        session.focus = "ü"
+        with patch("keygraphy.safe_addstr") as output, patch("keygraphy.attr", return_value=0):
+            draw_result(self._window(), session, progress, [], True, 0)
+        text = "".join(call.args[3] for call in output.call_args_list)
+        self.assertIn("NEW RECORD", text)
+        self.assertIn("ppm", text)
+        self.assertNotIn("[ü]", text)
+        self.assertTrue(any("\u2801" <= c <= "\u28ff" for c in text))
+
     def _window(self):
         window = Mock()
         window.getmaxyx.return_value = (24, 80)
