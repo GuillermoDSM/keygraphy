@@ -1,5 +1,6 @@
 import json
 import argparse
+import curses
 import random
 import tempfile
 import unittest
@@ -838,9 +839,9 @@ class ModeSwitchTests(unittest.TestCase):
         styles = [call.args[0] for call in style.call_args_list]
         self.assertEqual(KEYBOARD_ROWS[0], tuple("qwertyuiop´¨"))
         self.assertEqual(KEYBOARD_ROWS[1], tuple("asdfghjklñ"))
-        self.assertEqual(KEYBOARD_ROWS[2], tuple("zxcvbnm,.-"))
+        self.assertEqual(KEYBOARD_ROWS[2], tuple("zxcvbnm,.-'"))
         self.assertEqual(
-            {KEYBOARD_FINGER_BY_KEY[key] for key in "qazpñ-´"},
+            {KEYBOARD_FINGER_BY_KEY[key] for key in "qazpñ-´'"},
             {0},
         )
         self.assertEqual(
@@ -1016,6 +1017,50 @@ class ModeSwitchTests(unittest.TestCase):
         rendered = [call.args[3] for call in addstr.call_args_list]
         self.assertIn("[Ó]", rendered)
         self.assertIn("[´]", rendered)
+
+    def test_keyboard_dims_punctuation_until_unlocked(self):
+        progress = Progress()
+        window = Mock()
+        window.getmaxyx.return_value = (10, 80)
+
+        with patch("keygraphy.safe_addstr") as addstr, patch(
+            "keygraphy.attr", side_effect=lambda theme, extra=0: (theme, extra)
+        ) as style:
+            draw_keyboard_layout(window, progress, None, 1)
+
+        labels = [call.args[3] for call in addstr.call_args_list]
+        styles = [call.args for call in style.call_args_list]
+        comma = next(index for index, label in enumerate(labels) if label == " , ")
+        self.assertTrue(styles[comma][1] & curses.A_DIM)
+
+        master_keys(progress, KEY_ORDER[:-1])
+        with patch("keygraphy.safe_addstr") as addstr, patch(
+            "keygraphy.attr", side_effect=lambda theme, extra=0: (theme, extra)
+        ) as style:
+            draw_keyboard_layout(window, progress, None, 1)
+        labels = [call.args[3] for call in addstr.call_args_list]
+        styles = [call.args for call in style.call_args_list]
+        comma = next(index for index, label in enumerate(labels) if label == " , ")
+        self.assertFalse(styles[comma][1] & curses.A_DIM)
+
+    def test_practice_letter_bar_shows_marks_for_sign_focus(self):
+        progress = Progress(keyboard_view="letters")
+        master_keys(progress, KEY_ORDER[:-1])
+        session = Session(
+            progress,
+            generate_lesson(progress, random.Random(20), target_length=80),
+        )
+        self.assertEqual(session.focus, ",")
+        window = Mock()
+        window.getmaxyx.return_value = (24, 80)
+
+        with patch("keygraphy.safe_addstr") as addstr, patch(
+            "keygraphy.attr", return_value=0
+        ):
+            draw(window, session)
+
+        rendered = [call.args[3] for call in addstr.call_args_list]
+        self.assertTrue(any("[,]" in text for text in rendered))
 
     def test_practice_letter_bar_hides_performance_metrics(self):
         progress = Progress(keyboard_view="letters")
@@ -1238,7 +1283,7 @@ class ResultTests(unittest.TestCase):
         with patch("keygraphy.safe_addstr") as output, patch("keygraphy.attr", return_value=0):
             draw_result(self._window(), session, progress, [], True, 0)
         text = "".join(call.args[3] for call in output.call_args_list)
-        self.assertIn("NEW RECORD", text)
+        self.assertIn("NUEVO RÉCORD", text)
         self.assertIn("ppm", text)
         self.assertNotIn("[ü]", text)
         self.assertTrue(any("\u2801" <= c <= "\u28ff" for c in text))

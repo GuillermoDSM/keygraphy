@@ -20,7 +20,7 @@ from typing import Iterable
 
 
 APP_NAME = "keygraphy"
-VERSION = "0.4.0"
+VERSION = "0.5.0"
 LETTER_ORDER = ""
 KEY_ORDER = ""
 LETTER_ORDERS = {
@@ -120,10 +120,10 @@ BAR_RGBS = (
 KEYBOARD_ROWS = (
     ("q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "´", "¨"),
     ("a", "s", "d", "f", "g", "h", "j", "k", "l", "ñ"),
-    ("z", "x", "c", "v", "b", "n", "m", ",", ".", "-"),
+    ("z", "x", "c", "v", "b", "n", "m", ",", ".", "-", "'"),
 )
 KEYBOARD_FINGER_GROUPS = (
-    ("q", "a", "z", "p", "ñ", "-", "´", "¨"),
+    ("q", "a", "z", "p", "ñ", "-", "´", "¨", "'"),
     ("w", "s", "x", "o", "l", "."),
     ("e", "d", "c", "i", "k", ","),
     ("r", "f", "v", "t", "g", "b", "y", "h", "n", "u", "j", "m"),
@@ -1414,7 +1414,10 @@ def draw_keyboard_layout(
         zip(KEYBOARD_ROWS, (0, 1, 2))
     ):
         for index, letter in enumerate(row):
-            unlocked = not letter.isalpha() or letter in active_keys
+            if letter in ",.'":
+                unlocked = letter in active_keys
+            else:
+                unlocked = not letter.isalpha() or letter in active_keys
             if letter in display_focus_keys:
                 extra = curses.A_BOLD
                 unlocked = True
@@ -1580,7 +1583,9 @@ def draw(
     else:
         panel_y = height - 3
         bar_keys = progress.active_keys
-        if focus is not None and focus.isupper():
+        if focus is not None and focus in ",.'":
+            bar_keys = "".join(key for key in bar_keys if key in ",.'")
+        elif focus is not None and focus.isupper():
             bar_keys = "".join(key for key in bar_keys if key.isupper())
         else:
             bar_keys = "".join(key for key in bar_keys if key.islower())
@@ -1998,10 +2003,10 @@ def draw_result(
         elif unlocked[0] in ",.'":
             title = "· SIGNO NUEVO ·"
         else:
-            title = "· LETTER UNLOCKED ·"
+            title = "· LETRA NUEVA ·"
         blink = True
     elif hi_score:
-        title = "· NEW RECORD ·"
+        title = "· NUEVO RÉCORD ·"
         blink = True
     elif progress.keys_complete:
         title = "· DOMINIO COMPLETO ·"

@@ -1,7 +1,7 @@
 # keygraphy
 
 Minimal adaptive typing practice for Linux terminals. Keygraphy focuses lessons
-on the least confident letter and adds a new one after every active letter has
+on the least confident key and adds a new one after every active key has
 reached the target speed.
 
 By default, lessons use a 10,000-word `es-LA` corpus ranked from contemporary
@@ -9,16 +9,29 @@ multi-source language data. An `en-US` package is also available. Words are
 filtered to the currently unlocked letters. If fewer than 15 contain the focus
 letter, the remaining slots are filled with generated pseudowords.
 
-Per-letter timing uses milliseconds per required key press. Keygraphy averages
+Timing uses milliseconds per required key press. Keygraphy averages
 the total character production time over each completed lesson, smooths it with
 a 0.1 factor, and divides it by the character's key cost. Progress uses the best
 smoothed speed ever reached, so a mastered letter does not unexpectedly replace
-the current focus. Accuracy is still
-recorded and displayed, but it does not block letter progression. After every
-lesson, a compact summary shows the current and best timing for the focus. Once
-the full alphabet is active, each focus is held for three lessons, half of the
-words include the slowest current letter, and the result screen shows current
-and best PPM for the selected word package.
+the current focus. Accuracy is still recorded and displayed, but it does not
+block progression. After every lesson, a compact summary shows the current and
+best timing for the focus.
+
+## Phases
+
+The curriculum advances in three phases, one key at a time:
+
+1. Letters. Six lowercase letters start; new ones arrive in frequency order
+   until the alphabet is complete.
+2. Capitals. The same order again, each trained at the start of words; about
+   half the words begin with the focus capital.
+3. Punctuation. The period, then the comma, and finally the apostrophe in the
+   `en-US` package only, using a curated list of real contractions (`don't`,
+   `it's`, `I'm`...). Marks attach to word ends, a period capitalizes the next
+   word, and previously mastered marks keep appearing for review.
+
+Once every key is mastered, the result screen switches to current and best PPM,
+and each lesson reviews the slowest key, held for three lessons.
 
 Each language uses its own frequency order. The `es-LA` package is ranked from
 nine modern Spanish open books balanced across literature, history, and business

@@ -12,8 +12,9 @@ They value keyboard-driven tools, low setup cost, and short focused sessions.
 ## Product Purpose
 
 Keygraphy is a minimal terminal typing tutor. It measures accuracy and latency\
-per letter, keeps each lesson focused on the least confident unmastered letter,\
-and introduces new letters as their best smoothed speed reaches the target.
+per key, keeps each lesson focused on the least confident unmastered key, and\
+introduces letters, capitals, and punctuation as their best smoothed speed\
+reaches the target.
 
 ## Brand Personality
 
