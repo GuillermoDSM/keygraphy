@@ -7,6 +7,8 @@ import unicodedata
 from pathlib import Path
 from unittest.mock import Mock, patch
 
+import keygraphy
+
 from keygraphy import (
     BOOK_LEVEL_MIN_ATTEMPTS,
     BOOK_LEVELS,
@@ -28,6 +30,7 @@ from keygraphy import (
     WORD_PACKAGES,
     advance_book_position,
     apply_options,
+    available_contractions,
     bar_for,
     book_exercise,
     book_exercise_boundaries,
@@ -60,6 +63,7 @@ from keygraphy import (
     run_practice_session,
     run_result,
     save_progress,
+    select_word_package,
     unlock_feedback,
     visible_book_ranges,
     wrap_book_ranges,
@@ -215,6 +219,14 @@ class ProgressTests(unittest.TestCase):
         self.assertEqual(progress.key_cost("Ó"), 3)
         self.assertEqual(progress.key_cost("Ñ"), 2)
 
+    def test_signs_unlock_after_capitals_and_period_comes_first(self):
+        progress = Progress()
+        master_keys(progress, KEY_ORDER[:-2])
+        self.assertFalse(progress.keys_complete)
+        self.assertEqual(progress.active_keys, KEY_ORDER[:-1])
+        self.assertEqual(progress.weakest_key(), ".")
+        self.assertEqual(KEY_ORDER[-2:], ".,")
+
 
 class LessonTests(unittest.TestCase):
     def test_corpus_has_ten_thousand_frequency_ordered_words(self):
@@ -280,6 +292,49 @@ class LessonTests(unittest.TestCase):
         tokens = lesson.split(" ")
         starters = sum(token.startswith("Ü") for token in tokens)
         self.assertGreaterEqual(starters, len(tokens) // 3)
+
+    def test_period_lesson_marks_and_capitalizes_sentences(self):
+        progress = Progress()
+        master_keys(progress, KEY_ORDER[:-2])
+        self.assertEqual(progress.lesson_focus(), ".")
+        lesson = generate_lesson(progress, random.Random(9), target_length=160)
+        tokens = lesson.split(" ")
+        marked = [token for token in tokens if token.endswith(".")]
+        self.assertGreaterEqual(len(marked), len(tokens) // 6)
+        self.assertTrue(tokens[0][0].isupper())
+        self.assertNotIn("'", lesson)
+        self.assertNotIn(",", lesson)
+        for previous, current in zip(tokens, tokens[1:]):
+            if previous.endswith("."):
+                self.assertTrue(current[0].isupper())
+            else:
+                self.assertFalse(current[0].isupper())
+
+    def test_comma_lesson_keeps_reviewing_periods(self):
+        progress = Progress()
+        master_keys(progress, KEY_ORDER[:-1])
+        self.assertEqual(progress.lesson_focus(), ",")
+        lesson = generate_lesson(progress, random.Random(10), target_length=200)
+        tokens = lesson.split(" ")
+        self.assertTrue(any(token.endswith(",") for token in tokens))
+        self.assertTrue(any(token.endswith(".") for token in tokens))
+        self.assertNotIn("'", lesson)
+
+    def test_apostrophe_phase_uses_real_contractions_in_english(self):
+        self.addCleanup(select_word_package, "es-la")
+        select_word_package("en-us")
+        order = keygraphy.KEY_ORDER
+        progress = Progress(word_package="en-us")
+        master_keys(progress, order[:-1])
+        self.assertEqual(progress.lesson_focus(), "'")
+        lesson = generate_lesson(progress, random.Random(12), target_length=220)
+        tokens = lesson.split(" ")
+        apostrophes = [token for token in tokens if "'" in token]
+        self.assertGreaterEqual(len(apostrophes), len(tokens) // 4)
+        allowed = {word.lower() for word in available_contractions(order)}
+        for token in apostrophes:
+            self.assertIn(token.rstrip(".,").lower(), allowed)
+        self.assertTrue(any(token.endswith((".", ",")) for token in tokens))
 
     def test_session_records_hits_and_misses(self):
         progress = Progress()
@@ -1210,6 +1265,40 @@ class ResultTests(unittest.TestCase):
         text = "".join(call.args[3] for call in output.call_args_list)
         self.assertIn("MAYÚSCULA NUEVA", text)
 
+    def test_result_titles_mark_sign_transitions(self):
+        progress = Progress()
+        master_keys(progress, KEY_ORDER[:-2])
+        session = Session(progress, "casa")
+        session.focus = KEY_ORDER[-3]
+        self.assertTrue(session.focus.isupper())
+        with patch("keygraphy.safe_addstr") as output, patch(
+            "keygraphy.attr", return_value=0
+        ):
+            draw_result(self._window(), session, progress, ["."], False, 0)
+        text = "".join(call.args[3] for call in output.call_args_list)
+        self.assertIn("SIGNOS DESBLOQUEADOS", text)
+        self.assertIn(f"[{KEY_ORDER[-3]}]", text)
+
+        progress.letters["."] = LetterStat(time_ms=200, best_time_ms=200)
+        session = Session(progress, "casa")
+        session.focus = "."
+        with patch("keygraphy.safe_addstr") as output, patch(
+            "keygraphy.attr", return_value=0
+        ):
+            draw_result(self._window(), session, progress, [","], False, 0)
+        text = "".join(call.args[3] for call in output.call_args_list)
+        self.assertIn("SIGNO NUEVO", text)
+
+        progress.letters[","] = LetterStat(time_ms=200, best_time_ms=200)
+        session = Session(progress, "casa")
+        session.focus = ","
+        with patch("keygraphy.safe_addstr") as output, patch(
+            "keygraphy.attr", return_value=0
+        ):
+            draw_result(self._window(), session, progress, [], False, 0)
+        text = "".join(call.args[3] for call in output.call_args_list)
+        self.assertIn("DOMINIO COMPLETO", text)
+
     def _window(self):
         window = Mock()
         window.getmaxyx.return_value = (24, 80)
@@ -1358,6 +1447,19 @@ class PersistenceTests(unittest.TestCase):
             self.assertFalse(loaded.keys_complete)
             self.assertEqual(loaded.active_keys, LETTER_ORDER + "E")
             self.assertEqual(loaded.lesson_focus(), "E")
+
+    def test_post_complete_focus_can_be_a_sign(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "stats.json"
+            progress = Progress()
+            master_keys(progress)
+            progress.post_alphabet_focus = "."
+            save_progress(progress, path)
+
+            loaded = load_progress(path)
+            self.assertTrue(loaded.keys_complete)
+            self.assertEqual(loaded.post_alphabet_focus, ".")
+            self.assertEqual(loaded.lesson_focus(), ".")
 
     def test_legacy_save_without_keyboard_view_keeps_letters_bar(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -28,6 +28,20 @@ LETTER_ORDERS = {
     "en-us": "eiasnrtolcdpumghbyfvwkxjqz",
 }
 LEGACY_LETTER_ORDER = "eaosrnidlctumpbgvyqhfzjxkwñ"
+PUNCTUATION_ORDERS = {
+    "es-la": ".,",
+    "en-us": ".,'",
+}
+CONTRACTIONS = (
+    "I'm", "I've", "I'll", "I'd",
+    "you're", "you've", "you'll", "you'd",
+    "he's", "she's", "it's", "we're", "we've", "we'll", "we'd",
+    "they're", "they've", "they'll", "they'd",
+    "that's", "there's", "what's", "let's", "who's", "here's",
+    "don't", "can't", "won't", "isn't", "aren't", "wasn't", "weren't",
+    "didn't", "doesn't", "couldn't", "shouldn't", "wouldn't",
+    "hasn't", "haven't",
+)
 INITIAL_LETTERS = 6
 TARGET_WPM = 35
 MIN_TARGET_WPM = 15
@@ -46,6 +60,8 @@ DEFAULT_KEY_COSTS = {**dict.fromkeys("áéíóú", 2), "ü": 3}
 MIN_WORD_POOL = 15
 MAX_FREQUENT_WORDS = 1000
 FOCUSED_WORD_RATIO = 0.5
+FOCUSED_MARK_RATIO = 0.35
+REVIEW_MARK_RATIO = 0.12
 POST_ALPHABET_FOCUS_SESSIONS = 3
 DATA_DIR = Path(__file__).resolve().parent / "data"
 BOOK_DIR = DATA_DIR / "books"
@@ -169,7 +185,7 @@ def select_word_package(name: str) -> None:
     WORDS = load_word_list(WORD_PACKAGES[name])
     LETTER_ORDER = load_letter_order(WORD_PACKAGES[name], LETTER_ORDERS[name])
     LETTER_ORDERS[name] = LETTER_ORDER
-    KEY_ORDER = LETTER_ORDER + LETTER_ORDER.upper()
+    KEY_ORDER = LETTER_ORDER + LETTER_ORDER.upper() + PUNCTUATION_ORDERS[name]
 
 
 select_word_package(DEFAULT_WORD_PACKAGE)
@@ -293,7 +309,7 @@ class Progress:
 
     @property
     def keys_complete(self) -> bool:
-        return self.active_keys == KEY_ORDER
+        return all(self.best_confidence(key) >= 1 for key in KEY_ORDER)
 
     @property
     def target_time_ms(self) -> float:
@@ -477,7 +493,8 @@ def load_progress(path: Path | None = None) -> Progress:
         raw_focus = raw.get("post_alphabet_focus")
         post_alphabet_focus = (
             raw_focus
-            if isinstance(raw_focus, str) and raw_focus in letter_order
+            if isinstance(raw_focus, str)
+            and raw_focus in letter_order + letter_order.upper() + ",.'"
             else None
         )
         try:
@@ -720,6 +737,10 @@ def alphabet_complete(active_letters: str) -> bool:
     return set(LETTER_ORDER) <= set(active_letters)
 
 
+def capitals_complete(active_keys: str) -> bool:
+    return set(LETTER_ORDER.upper()) <= set(active_keys)
+
+
 def build_word_pool(
     active_letters: str,
     focus: str | None,
@@ -806,6 +827,47 @@ def generate_capital_lesson(
     return " ".join(result)
 
 
+def available_contractions(active_keys: str) -> list[str]:
+    allowed = set(active_keys)
+    return [word for word in CONTRACTIONS if set(word) <= allowed]
+
+
+def generate_mark_lesson(
+    active_keys: str,
+    focus: str,
+    rng: random.Random,
+    target_length: int,
+) -> str:
+    """Words with sentence punctuation; contractions train the apostrophe."""
+    words = build_word_pool(active_keys, None, rng)
+    contractions = available_contractions(active_keys) if focus == "'" else []
+    review_marks = [
+        key for key in ",.'" if key in active_keys and key != focus
+    ]
+    tokens: list[str] = []
+    length = 0
+    capitalize_next = True
+
+    while length < target_length:
+        token = rng.choice(words)
+        if contractions and rng.random() < FOCUSED_WORD_RATIO:
+            token = rng.choice(contractions)
+        mark = ""
+        if focus in ".," and rng.random() < FOCUSED_MARK_RATIO:
+            mark = focus
+        elif review_marks and rng.random() < REVIEW_MARK_RATIO:
+            mark = rng.choice(review_marks)
+        if capitalize_next:
+            token = token[:1].upper() + token[1:]
+        token += mark
+        capitalize_next = mark == "."
+        if tokens and tokens[-1].lower().rstrip(".,'") == token.lower().rstrip(".,'"):
+            continue
+        tokens.append(token)
+        length += len(token) + (1 if len(tokens) > 1 else 0)
+    return " ".join(tokens)
+
+
 def generate_lesson(
     progress: Progress,
     rng: random.Random | None = None,
@@ -816,6 +878,8 @@ def generate_lesson(
     focus = progress.lesson_focus()
     if focus is not None and focus.isupper():
         return generate_capital_lesson(active, focus, rng, target_length)
+    if focus is not None and focus in ",.'":
+        return generate_mark_lesson(active, focus, rng, target_length)
     pool = build_word_pool(active, focus, rng)
     result: list[str] = []
     length = 0
@@ -901,6 +965,8 @@ class Session:
         if (
             correct
             and not is_trigger
+            # Punctuation stays recordable for every package so statistics
+            # survive word package switches; generation gates the phases.
             and expected in KEY_ORDER + ",.'"
         ):
             sample = self.letter_samples.setdefault(expected, LessonSample())
@@ -1920,8 +1986,17 @@ def draw_result(
             and session.focus.islower()
         ):
             title = "· MAYÚSCULAS DESBLOQUEADAS ·"
+        elif (
+            capitals_complete(progress.active_keys)
+            and any(key in ",.'" for key in unlocked)
+            and session.focus is not None
+            and session.focus.isupper()
+        ):
+            title = "· SIGNOS DESBLOQUEADOS ·"
         elif unlocked[0].isupper():
             title = "· MAYÚSCULA NUEVA ·"
+        elif unlocked[0] in ",.'":
+            title = "· SIGNO NUEVO ·"
         else:
             title = "· LETTER UNLOCKED ·"
         blink = True
