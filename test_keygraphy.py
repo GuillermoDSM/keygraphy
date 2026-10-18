@@ -18,6 +18,7 @@ from keygraphy import (
     INITIAL_LETTERS,
     KEYBOARD_FINGER_BY_KEY,
     KEYBOARD_ROWS,
+    KEY_ORDER,
     LETTER_ORDER,
     LetterStat,
     Progress,
@@ -66,6 +67,11 @@ from keygraphy import (
 )
 
 
+def master_keys(progress: Progress, keys: str = KEY_ORDER) -> None:
+    for key in keys:
+        progress.letters[key] = LetterStat(time_ms=200, best_time_ms=200)
+
+
 class ProgressTests(unittest.TestCase):
     def test_new_progress_defaults_to_keyboard_view(self):
         self.assertEqual(Progress().keyboard_view, "keyboard")
@@ -91,31 +97,31 @@ class ProgressTests(unittest.TestCase):
 
     def test_starts_with_six_letters_and_focuses_unsampled_letter(self):
         progress = Progress()
-        self.assertEqual(progress.active_letters, LETTER_ORDER[:INITIAL_LETTERS])
-        self.assertEqual(progress.weakest_letter(), LETTER_ORDER[0])
+        self.assertEqual(progress.active_keys, LETTER_ORDER[:INITIAL_LETTERS])
+        self.assertEqual(progress.weakest_key(), LETTER_ORDER[0])
 
     def test_includes_next_letter_when_every_active_letter_reached_target(self):
         progress = Progress()
-        for letter in progress.active_letters:
+        for letter in progress.active_keys:
             progress.letters[letter] = LetterStat(
                 hits=30,
                 misses=0,
                 time_ms=200,
                 best_time_ms=200,
             )
-        self.assertEqual(progress.active_letters, LETTER_ORDER[: INITIAL_LETTERS + 1])
-        self.assertEqual(progress.weakest_letter(), LETTER_ORDER[INITIAL_LETTERS])
+        self.assertEqual(progress.active_keys, LETTER_ORDER[: INITIAL_LETTERS + 1])
+        self.assertEqual(progress.weakest_key(), LETTER_ORDER[INITIAL_LETTERS])
 
     def test_accuracy_does_not_block_progress(self):
         progress = Progress()
-        for letter in progress.active_letters:
+        for letter in progress.active_keys:
             progress.letters[letter] = LetterStat(
                 hits=1,
                 misses=20,
                 time_ms=200,
                 best_time_ms=200,
             )
-        self.assertEqual(progress.active_letters, LETTER_ORDER[: INITIAL_LETTERS + 1])
+        self.assertEqual(progress.active_keys, LETTER_ORDER[: INITIAL_LETTERS + 1])
 
     def test_new_letter_remains_focused_until_it_reaches_target(self):
         progress = Progress()
@@ -126,8 +132,8 @@ class ProgressTests(unittest.TestCase):
             )
         new_letter = LETTER_ORDER[INITIAL_LETTERS]
         progress.stat(new_letter).append_lesson(20, 4, 500)
-        self.assertEqual(progress.weakest_letter(), new_letter)
-        self.assertEqual(progress.active_letters, LETTER_ORDER[: INITIAL_LETTERS + 1])
+        self.assertEqual(progress.weakest_key(), new_letter)
+        self.assertEqual(progress.active_keys, LETTER_ORDER[: INITIAL_LETTERS + 1])
 
     def test_current_slowdown_does_not_refocus_a_mastered_letter(self):
         progress = Progress()
@@ -137,30 +143,22 @@ class ProgressTests(unittest.TestCase):
                 best_time_ms=200,
             )
         progress.letters["e"].time_ms = 500
-        self.assertEqual(progress.weakest_letter(), LETTER_ORDER[INITIAL_LETTERS])
+        self.assertEqual(progress.weakest_key(), LETTER_ORDER[INITIAL_LETTERS])
 
-    def test_completed_alphabet_focuses_the_slowest_current_letter(self):
+    def test_completed_keys_focuses_the_slowest_current_key(self):
         progress = Progress()
-        for letter in LETTER_ORDER:
-            progress.letters[letter] = LetterStat(
-                time_ms=200,
-                best_time_ms=200,
-            )
-        slowest = LETTER_ORDER[-1]
+        master_keys(progress)
+        slowest = KEY_ORDER[-1]
         progress.letters[slowest].time_ms = 500
 
-        self.assertTrue(progress.alphabet_complete)
-        self.assertEqual(progress.weakest_letter(), slowest)
+        self.assertTrue(progress.keys_complete)
+        self.assertEqual(progress.weakest_key(), slowest)
 
-    def test_completed_alphabet_keeps_focus_for_three_lessons(self):
+    def test_completed_keys_keeps_focus_for_three_lessons(self):
         progress = Progress()
-        for letter in LETTER_ORDER:
-            progress.letters[letter] = LetterStat(
-                time_ms=200,
-                best_time_ms=200,
-            )
-        first = LETTER_ORDER[-1]
-        second = LETTER_ORDER[-2]
+        master_keys(progress)
+        first = KEY_ORDER[-1]
+        second = KEY_ORDER[-2]
         progress.letters[first].time_ms = 500
         progress.letters[second].time_ms = 450
 
@@ -191,7 +189,7 @@ class ProgressTests(unittest.TestCase):
         self.assertAlmostEqual(stat.time_ms, 392)
         self.assertAlmostEqual(stat.best_time_ms, 380)
 
-    def test_unlock_feedback_explains_the_weakest_letter(self):
+    def test_unlock_feedback_explains_the_weakest_key(self):
         progress = Progress()
         feedback = unlock_feedback(progress)
         self.assertNotIn("Foco", feedback)
@@ -199,14 +197,23 @@ class ProgressTests(unittest.TestCase):
         self.assertIn("mejor -- ms", feedback)
         self.assertIn("objetivo 343 ms", feedback)
 
-    def test_unlock_feedback_reports_completed_alphabet(self):
+    def test_unlock_feedback_reports_completed_keys(self):
         progress = Progress()
-        for letter in LETTER_ORDER:
-            progress.letters[letter] = LetterStat(
-                time_ms=200,
-                best_time_ms=200,
-            )
-        self.assertEqual(unlock_feedback(progress), "Alfabeto completo")
+        master_keys(progress)
+        self.assertEqual(unlock_feedback(progress), "Todas las teclas dominadas")
+
+    def test_capitals_unlock_after_every_lowercase_letter(self):
+        progress = Progress()
+        master_keys(progress, LETTER_ORDER)
+        self.assertFalse(progress.keys_complete)
+        self.assertEqual(progress.active_keys, LETTER_ORDER + "E")
+        self.assertEqual(progress.weakest_key(), "E")
+
+    def test_capital_key_cost_adds_one_press_for_shift(self):
+        progress = Progress()
+        self.assertEqual(progress.key_cost("E"), 2)
+        self.assertEqual(progress.key_cost("Ó"), 3)
+        self.assertEqual(progress.key_cost("Ñ"), 2)
 
 
 class LessonTests(unittest.TestCase):
@@ -242,12 +249,37 @@ class LessonTests(unittest.TestCase):
         self.assertGreater(focused, 0)
         self.assertAlmostEqual(focused / len(pool), 0.5, delta=0.05)
 
-    def test_lesson_uses_only_active_letters_and_spaces(self):
+    def test_lesson_uses_only_active_keys_and_spaces(self):
         progress = Progress()
         lesson = generate_lesson(progress, random.Random(4), target_length=80)
         self.assertGreaterEqual(len(lesson), 80)
-        self.assertLessEqual(set(lesson), set(progress.active_letters + " "))
-        self.assertIn(progress.weakest_letter(), lesson)
+        self.assertLessEqual(set(lesson), set(progress.active_keys + " "))
+        self.assertIn(progress.weakest_key(), lesson)
+
+    def test_capital_lesson_capitalizes_only_focus_starts(self):
+        progress = Progress()
+        master_keys(progress, LETTER_ORDER)
+        self.assertEqual(progress.lesson_focus(), "E")
+        lesson = generate_lesson(progress, random.Random(6), target_length=120)
+        self.assertEqual({key for key in lesson if key.isupper()}, {"E"})
+        tokens = lesson.split(" ")
+        starters = sum(token.startswith("E") for token in tokens)
+        self.assertGreaterEqual(starters, len(tokens) // 3)
+        self.assertLessEqual(starters, len(tokens) * 2 // 3 + 1)
+        for token in tokens:
+            if not token.startswith("E"):
+                self.assertFalse(token[0].isupper())
+
+    def test_capital_lesson_fills_missing_starters_with_pseudo_words(self):
+        progress = Progress()
+        index = KEY_ORDER.index("Ü")
+        master_keys(progress, KEY_ORDER[:index])
+        self.assertEqual(progress.lesson_focus(), "Ü")
+        lesson = generate_lesson(progress, random.Random(5), target_length=120)
+        self.assertEqual({key for key in lesson if key.isupper()}, {"Ü"})
+        tokens = lesson.split(" ")
+        starters = sum(token.startswith("Ü") for token in tokens)
+        self.assertGreaterEqual(starters, len(tokens) // 3)
 
     def test_session_records_hits_and_misses(self):
         progress = Progress()
@@ -300,7 +332,7 @@ class LessonTests(unittest.TestCase):
             time_ms=200,
             best_time_ms=200,
         )
-        self.assertEqual(progress.weakest_letter(), LETTER_ORDER[1])
+        self.assertEqual(progress.weakest_key(), LETTER_ORDER[1])
         self.assertEqual(session.focus, focus)
 
     def test_reset_discards_partial_attempt_and_statistics(self):
@@ -353,13 +385,24 @@ class KeyTimingTests(unittest.TestCase):
         focus_index = LETTER_ORDER.index("ó")
         for letter in LETTER_ORDER[:focus_index]:
             progress.letters[letter] = LetterStat(time_ms=200, best_time_ms=200)
-        self.assertEqual(progress.weakest_letter(), "ó")
+        self.assertEqual(progress.weakest_key(), "ó")
         session = Session(progress, "aó")
         session.add("a", now=1)
         session.add("ó", now=1.6)
         session.commit()
         self.assertEqual(progress.stat("ó").time_ms, 300)
-        self.assertIn(LETTER_ORDER[focus_index + 1], progress.active_letters)
+        self.assertIn(LETTER_ORDER[focus_index + 1], progress.active_keys)
+
+    def test_capital_session_records_shifted_samples(self):
+        progress = Progress()
+        session = Session(progress, "nE")
+        session.add("n", now=1.0)
+        session.add("E", now=1.4)
+        session.commit()
+        stat = progress.stat("E")
+        self.assertEqual(stat.hits, 1)
+        self.assertAlmostEqual(stat.raw_time_ms, 400)
+        self.assertAlmostEqual(stat.time_ms, 200)
 
     def test_corrected_composed_character_does_not_improve_speed(self):
         progress = Progress()
@@ -529,7 +572,7 @@ class BookTests(unittest.TestCase):
         _, text = current_book_chunk(progress, book)
         session = BookSession(text, progress.book_level)
         self.assertEqual(session.text, book.sections[0].chunks[0])
-        self.assertGreater(set(text.lower()) - set(progress.active_letters + " "), set())
+        self.assertGreater(set(text.lower()) - set(progress.active_keys + " "), set())
         self.assertIn("háblame, musa", text.lower())
 
     def test_book_levels_add_punctuation_cumulatively(self):
@@ -884,6 +927,41 @@ class ModeSwitchTests(unittest.TestCase):
         self.assertFalse(any("─" in text for text in rendered))
         self.assertFalse(any("Esc opciones" in text for text in rendered))
 
+    def test_practice_shows_shift_hint_and_uppercase_focus_key(self):
+        progress = Progress()
+        master_keys(progress, LETTER_ORDER)
+        session = Session(
+            progress,
+            generate_lesson(progress, random.Random(3), target_length=80),
+        )
+        self.assertEqual(session.focus, "E")
+        window = Mock()
+        window.getmaxyx.return_value = (24, 80)
+
+        with (
+            patch("keygraphy.safe_addstr") as addstr,
+            patch("keygraphy.attr", return_value=0),
+        ):
+            draw(window, session)
+
+        rendered = [call.args[3] for call in addstr.call_args_list]
+        self.assertIn("⇧ Mayús", rendered)
+        self.assertTrue(any("[E]" in text for text in rendered))
+
+    def test_keyboard_marks_accented_capital_focus(self):
+        progress = Progress()
+        window = Mock()
+        window.getmaxyx.return_value = (10, 80)
+
+        with patch("keygraphy.safe_addstr") as addstr, patch(
+            "keygraphy.attr", return_value=0
+        ):
+            draw_keyboard_layout(window, progress, "Ó", 1)
+
+        rendered = [call.args[3] for call in addstr.call_args_list]
+        self.assertIn("[Ó]", rendered)
+        self.assertIn("[´]", rendered)
+
     def test_practice_letter_bar_hides_performance_metrics(self):
         progress = Progress(keyboard_view="letters")
         session = Session(progress, "casa")
@@ -1097,10 +1175,9 @@ class ResultTests(unittest.TestCase):
         self.assertGreater(max(values) - min(values), 0.01)
         self.assertNotEqual(result_gauge_rows(8, 0), result_gauge_rows(8, 1))
 
-    def test_completed_alphabet_record_still_celebrates(self):
+    def test_completed_keys_record_still_celebrates(self):
         progress = Progress()
-        for letter in LETTER_ORDER:
-            progress.letters[letter] = LetterStat(time_ms=200, best_time_ms=200)
+        master_keys(progress)
         session = Session(progress, "casa")
         session.focus = "ü"
         with patch("keygraphy.safe_addstr") as output, patch("keygraphy.attr", return_value=0):
@@ -1110,6 +1187,28 @@ class ResultTests(unittest.TestCase):
         self.assertIn("ppm", text)
         self.assertNotIn("[ü]", text)
         self.assertTrue(any("\u2801" <= c <= "\u28ff" for c in text))
+
+    def test_result_titles_mark_phase_transitions(self):
+        progress = Progress()
+        master_keys(progress, LETTER_ORDER)
+        session = Session(progress, "casa")
+        session.focus = "ü"
+        with patch("keygraphy.safe_addstr") as output, patch(
+            "keygraphy.attr", return_value=0
+        ):
+            draw_result(self._window(), session, progress, ["E"], False, 0)
+        text = "".join(call.args[3] for call in output.call_args_list)
+        self.assertIn("MAYÚSCULAS DESBLOQUEADAS", text)
+
+        progress.letters["E"] = LetterStat(time_ms=200, best_time_ms=200)
+        session = Session(progress, "casa")
+        session.focus = "E"
+        with patch("keygraphy.safe_addstr") as output, patch(
+            "keygraphy.attr", return_value=0
+        ):
+            draw_result(self._window(), session, progress, ["A"], False, 0)
+        text = "".join(call.args[3] for call in output.call_args_list)
+        self.assertIn("MAYÚSCULA NUEVA", text)
 
     def _window(self):
         window = Mock()
@@ -1180,22 +1279,14 @@ class ResultTests(unittest.TestCase):
 
     def test_result_screen_handles_empty_focus(self):
         progress = Progress()
-        for letter in LETTER_ORDER:
-            progress.letters[letter] = LetterStat(
-                time_ms=200,
-                best_time_ms=200,
-            )
+        master_keys(progress)
         session = Session(progress, "casa")
         session.focus = None
         self._render(session, progress, [], False, 10)
 
-    def test_result_screen_shows_wpm_after_completing_alphabet(self):
+    def test_result_screen_shows_wpm_after_completing_keys(self):
         progress = Progress()
-        for letter in LETTER_ORDER:
-            progress.letters[letter] = LetterStat(
-                time_ms=200,
-                best_time_ms=200,
-            )
+        master_keys(progress)
         progress.best_wpm_by_package[progress.word_package] = 45
         session = Session(progress, "casa")
         session.typed = list(session.text)
@@ -1253,6 +1344,20 @@ class PersistenceTests(unittest.TestCase):
             self.assertEqual(loaded.post_alphabet_focus, "e")
             self.assertEqual(loaded.post_alphabet_focus_sessions, 2)
             json.loads(path.read_text(encoding="utf-8"))
+
+    def test_alphabet_complete_save_enters_capitals_phase(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "stats.json"
+            progress = Progress()
+            master_keys(progress, LETTER_ORDER)
+            progress.post_alphabet_focus = "f"
+            progress.post_alphabet_focus_sessions = 3
+            save_progress(progress, path)
+
+            loaded = load_progress(path)
+            self.assertFalse(loaded.keys_complete)
+            self.assertEqual(loaded.active_keys, LETTER_ORDER + "E")
+            self.assertEqual(loaded.lesson_focus(), "E")
 
     def test_legacy_save_without_keyboard_view_keeps_letters_bar(self):
         with tempfile.TemporaryDirectory() as directory:

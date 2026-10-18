@@ -22,6 +22,7 @@ from typing import Iterable
 APP_NAME = "keygraphy"
 VERSION = "0.4.0"
 LETTER_ORDER = ""
+KEY_ORDER = ""
 LETTER_ORDERS = {
     "es-la": "eaosnirldctumpgbvóqfhíájzéyxñúkwü",
     "en-us": "eiasnrtolcdpumghbyfvwkxjqz",
@@ -164,10 +165,11 @@ WORDS: tuple[str, ...] = ()
 
 
 def select_word_package(name: str) -> None:
-    global LETTER_ORDER, WORDS
+    global KEY_ORDER, LETTER_ORDER, WORDS
     WORDS = load_word_list(WORD_PACKAGES[name])
     LETTER_ORDER = load_letter_order(WORD_PACKAGES[name], LETTER_ORDERS[name])
     LETTER_ORDERS[name] = LETTER_ORDER
+    KEY_ORDER = LETTER_ORDER + LETTER_ORDER.upper()
 
 
 select_word_package(DEFAULT_WORD_PACKAGE)
@@ -278,20 +280,20 @@ class Progress:
         self.reset_post_alphabet_focus()
 
     @property
-    def active_letters(self) -> str:
+    def active_keys(self) -> str:
         included: list[str] = []
-        for letter in LETTER_ORDER:
+        for key in KEY_ORDER:
             if len(included) < INITIAL_LETTERS:
-                included.append(letter)
-            elif self.best_confidence(letter) >= 1:
-                included.append(letter)
+                included.append(key)
+            elif self.best_confidence(key) >= 1:
+                included.append(key)
             elif all(self.best_confidence(current) >= 1 for current in included):
-                included.append(letter)
+                included.append(key)
         return "".join(included)
 
     @property
-    def alphabet_complete(self) -> bool:
-        return self.active_letters == LETTER_ORDER
+    def keys_complete(self) -> bool:
+        return self.active_keys == KEY_ORDER
 
     @property
     def target_time_ms(self) -> float:
@@ -311,24 +313,24 @@ class Progress:
         best_time_ms = stat.best_time_ms if stat is not None else None
         return self.target_time_ms / best_time_ms if best_time_ms else 0.0
 
-    def weakest_letter(self) -> str | None:
+    def weakest_key(self) -> str | None:
         learning = [
-            letter
-            for letter in self.active_letters
-            if self.best_confidence(letter) < 1
+            key
+            for key in self.active_keys
+            if self.best_confidence(key) < 1
         ]
         if learning:
             return min(learning, key=self.best_confidence)
-        if not self.alphabet_complete:
+        if not self.keys_complete:
             return None
         measured = [
-            letter
-            for letter in self.active_letters
-            if self.letters.get(letter) is not None
-            and self.letters[letter].time_ms is not None
+            key
+            for key in self.active_keys
+            if self.letters.get(key) is not None
+            and self.letters[key].time_ms is not None
         ]
         return (
-            max(measured, key=lambda letter: self.letters[letter].time_ms)
+            max(measured, key=lambda key: self.letters[key].time_ms)
             if measured
             else None
         )
@@ -342,26 +344,26 @@ class Progress:
             self.best_wpm_by_package[self.word_package] = wpm
 
     def lesson_focus(self) -> str | None:
-        if not self.alphabet_complete:
-            return self.weakest_letter()
+        if not self.keys_complete:
+            return self.weakest_key()
         stored = self.post_alphabet_focus
         stored_stat = self.letters.get(stored) if stored is not None else None
         if (
             stored is not None
-            and stored in self.active_letters
+            and stored in self.active_keys
             and stored_stat is not None
             and stored_stat.time_ms is not None
             and self.post_alphabet_focus_sessions < POST_ALPHABET_FOCUS_SESSIONS
         ):
             return stored
-        focus = self.weakest_letter()
+        focus = self.weakest_key()
         self.post_alphabet_focus = focus
         self.post_alphabet_focus_sessions = 0
         return focus
 
     def record_lesson_focus(self, focus: str | None) -> None:
         if (
-            self.alphabet_complete
+            self.keys_complete
             and focus is not None
             and focus == self.post_alphabet_focus
         ):
@@ -658,11 +660,11 @@ def save_progress(progress: Progress, path: Path | None = None) -> None:
 
 
 def unlock_feedback(progress: Progress) -> str:
-    if progress.alphabet_complete:
-        return "Alfabeto completo"
-    focus = progress.weakest_letter()
+    if progress.keys_complete:
+        return "Todas las teclas dominadas"
+    focus = progress.weakest_key()
     if focus is None:
-        return "Alfabeto completo"
+        return "Todas las teclas dominadas"
     stat = progress.stat(focus)
     current = f"{stat.time_ms:.0f}" if stat.time_ms is not None else "--"
     best = f"{stat.best_time_ms:.0f}" if stat.best_time_ms is not None else "--"
@@ -697,12 +699,11 @@ def pseudo_word(
     focus: str | None,
     rng: random.Random,
 ) -> str:
-    vowels = [letter for letter in active_letters if letter in "aeiouáéíóúü"]
-    consonants = [
-        letter for letter in active_letters if letter not in "aeiouáéíóúü"
-    ]
+    letters = [letter for letter in active_letters if letter.islower()]
+    vowels = [letter for letter in letters if letter in "aeiouáéíóúü"]
+    consonants = [letter for letter in letters if letter not in "aeiouáéíóúü"]
     if not vowels or not consonants:
-        pool = list(active_letters)
+        pool = list(letters)
         word = "".join(rng.choice(pool) for _ in range(rng.randint(3, 6)))
     else:
         size = rng.randint(2, 3)
@@ -715,6 +716,10 @@ def pseudo_word(
     return word
 
 
+def alphabet_complete(active_letters: str) -> bool:
+    return set(LETTER_ORDER) <= set(active_letters)
+
+
 def build_word_pool(
     active_letters: str,
     focus: str | None,
@@ -722,7 +727,7 @@ def build_word_pool(
     minimum: int = MIN_WORD_POOL,
 ) -> list[str]:
     eligible, focused = eligible_words(active_letters, focus)
-    if focus is not None and active_letters == LETTER_ORDER:
+    if focus is not None and alphabet_complete(active_letters):
         general = [word for word in eligible if focus not in word]
         focused_limit = round(MAX_FREQUENT_WORDS * FOCUSED_WORD_RATIO)
         general_limit = MAX_FREQUENT_WORDS - focused_limit
@@ -734,7 +739,7 @@ def build_word_pool(
     attempts = 0
     while len(pool) < minimum and attempts < minimum * 100:
         word_focus = focus
-        if focus is not None and active_letters == LETTER_ORDER:
+        if focus is not None and alphabet_complete(active_letters):
             focused_count = sum(focus in word for word in pool)
             word_focus = focus if focused_count < len(pool) * FOCUSED_WORD_RATIO else None
         word = pseudo_word(active_letters, word_focus, rng)
@@ -743,11 +748,62 @@ def build_word_pool(
         attempts += 1
     while len(pool) < minimum:
         word_focus = focus
-        if focus is not None and active_letters == LETTER_ORDER:
+        if focus is not None and alphabet_complete(active_letters):
             focused_count = sum(focus in word for word in pool)
             word_focus = focus if focused_count < len(pool) * FOCUSED_WORD_RATIO else None
         pool.append(pseudo_word(active_letters, word_focus, rng))
     return pool
+
+
+def build_capital_pool(
+    active_keys: str,
+    focus: str,
+    rng: random.Random,
+) -> list[str]:
+    """Words for a capital focus, half starting with its letter."""
+    focus_letter = focus.lower()
+    allowed = set(active_keys) | {key.lower() for key in active_keys}
+    eligible = [
+        word
+        for raw in WORDS
+        if (word := normalize_word(raw))
+        and len(word) > 1
+        and set(word) <= allowed
+    ]
+    starters = [word for word in eligible if word.startswith(focus_letter)]
+    general = [word for word in eligible if not word.startswith(focus_letter)]
+    focused_limit = round(MAX_FREQUENT_WORDS * FOCUSED_WORD_RATIO)
+    general_limit = MAX_FREQUENT_WORDS - focused_limit
+    if len(starters) < focused_limit:
+        letters = "".join(key for key in active_keys if key.islower())
+        known = set(starters)
+        while len(starters) < focused_limit:
+            word = focus_letter + pseudo_word(letters, None, rng)
+            if word not in known:
+                known.add(word)
+                starters.append(word)
+    return starters[:focused_limit] + general[:general_limit]
+
+
+def generate_capital_lesson(
+    active_keys: str,
+    focus: str,
+    rng: random.Random,
+    target_length: int,
+) -> str:
+    focus_letter = focus.lower()
+    pool = build_capital_pool(active_keys, focus, rng)
+    result: list[str] = []
+    length = 0
+
+    while length < target_length:
+        word = rng.choice(pool)
+        if result and result[-1].lower() == word:
+            continue
+        token = word.capitalize() if word.startswith(focus_letter) else word
+        result.append(token)
+        length += len(token) + (1 if len(result) > 1 else 0)
+    return " ".join(result)
 
 
 def generate_lesson(
@@ -756,8 +812,10 @@ def generate_lesson(
     target_length: int = LESSON_LENGTH,
 ) -> str:
     rng = rng or random.Random()
-    active = progress.active_letters
+    active = progress.active_keys
     focus = progress.lesson_focus()
+    if focus is not None and focus.isupper():
+        return generate_capital_lesson(active, focus, rng, target_length)
     pool = build_word_pool(active, focus, rng)
     result: list[str] = []
     length = 0
@@ -843,7 +901,7 @@ class Session:
         if (
             correct
             and not is_trigger
-            and expected in LETTER_ORDER + LETTER_ORDER.upper() + ",.'"
+            and expected in KEY_ORDER + ",.'"
         ):
             sample = self.letter_samples.setdefault(expected, LessonSample())
             sample.hits += 1
@@ -1256,15 +1314,18 @@ def change_target_wpm(target_wpm: int, direction: int) -> int:
     )
 
 
+ACCENT_BASE_KEYS = {"á": "a", "é": "e", "í": "i", "ó": "o", "ú": "u"}
+
+
 def keyboard_focus_keys(focus: str | None) -> set[str]:
-    keys = {focus} if focus else set()
+    if not focus:
+        return set()
+    base = focus.lower()
+    keys = {base}
     keys.update(
         {
-            {"á": "a", "é": "e", "í": "i", "ó": "o", "ú": "u"}.get(
-                focus,
-                "",
-            ),
-            "¨" if focus == "ü" else "´" if focus in {"á", "é", "í", "ó", "ú"} else "",
+            ACCENT_BASE_KEYS.get(base, ""),
+            "¨" if base == "ü" else "´" if base in ACCENT_BASE_KEYS else "",
         }
         - {""}
     )
@@ -1278,15 +1339,16 @@ def draw_keyboard_layout(
     start_y: int,
 ) -> None:
     _, width = stdscr.getmaxyx()
-    active_letters = set(progress.active_letters)
+    active_keys = set(progress.active_keys)
     display_focus_keys = keyboard_focus_keys(focus)
+    shift_focus = focus is not None and focus.isupper()
     keyboard_width = len(KEYBOARD_ROWS[0]) * 3 + KEYBOARD_HAND_GAP
     keyboard_x = (width - keyboard_width) // 2
     for row_index, (row, indent) in enumerate(
         zip(KEYBOARD_ROWS, (0, 1, 2))
     ):
         for index, letter in enumerate(row):
-            unlocked = not letter.isalpha() or letter in active_letters
+            unlocked = not letter.isalpha() or letter in active_keys
             if letter in display_focus_keys:
                 extra = curses.A_BOLD
                 unlocked = True
@@ -1300,7 +1362,12 @@ def draw_keyboard_layout(
                 if unlocked
                 else Theme.KEYBOARD_LOCKED_THEMES[finger]
             )
-            label = f"[{letter}]" if letter in display_focus_keys else f" {letter} "
+            label = f" {letter} "
+            if letter in display_focus_keys:
+                label = f"[{letter}]"
+                base = focus.lower() if focus is not None else ""
+                if shift_focus and letter == ACCENT_BASE_KEYS.get(base, base):
+                    label = f"[{focus}]"
             safe_addstr(
                 stdscr,
                 start_y + row_index,
@@ -1446,13 +1513,18 @@ def draw(
         draw_keyboard_layout(stdscr, progress, focus, panel_y)
     else:
         panel_y = height - 3
+        bar_keys = progress.active_keys
+        if focus is not None and focus.isupper():
+            bar_keys = "".join(key for key in bar_keys if key.isupper())
+        else:
+            bar_keys = "".join(key for key in bar_keys if key.islower())
         spaced_letters = " ".join(
-            f"[{letter}]" if letter == focus else letter
-            for letter in progress.active_letters
+            f"[{key}]" if key == focus else key
+            for key in bar_keys
         )
         compact_letters = "".join(
-            f"[{letter}]" if letter == focus else letter
-            for letter in progress.active_letters
+            f"[{key}]" if key == focus else key
+            for key in bar_keys
         )
         available = width - 6
         letters = spaced_letters if len(spaced_letters) <= available else compact_letters
@@ -1500,6 +1572,15 @@ def draw(
             3,
             notice[: max(0, width - 6)],
             attr(Theme.WARNING, curses.A_BOLD),
+        )
+    elif focus is not None and focus.isupper():
+        hint = "⇧ Mayús"
+        safe_addstr(
+            stdscr,
+            height - 1,
+            max(0, (width - len(hint)) // 2),
+            hint,
+            attr(Theme.MUTED, curses.A_DIM),
         )
     stdscr.refresh()
 
@@ -1805,7 +1886,7 @@ def draw_result(
         return
 
     target = progress.target_time_ms
-    focus = None if progress.alphabet_complete else session.focus
+    focus = None if progress.keys_complete else session.focus
     start_y = max(2, (height - 9) // 2)
     elapsed_ms = ticks * RESULT_FRAME_MS
     celebrate = bool(unlocked or hi_score)
@@ -1826,19 +1907,31 @@ def draw_result(
     title: str | None = None
     blink = False
     if unlocked:
-        title = (
-            "· ALFABETO COMPLETO ·"
-            if progress.alphabet_complete
-            else "· LETTER UNLOCKED ·"
-        )
+        if progress.keys_complete:
+            title = "· DOMINIO COMPLETO ·"
+        elif alphabet_complete(progress.active_keys) and any(
+            key.islower() for key in unlocked
+        ):
+            title = "· ALFABETO COMPLETO ·"
+        elif (
+            alphabet_complete(progress.active_keys)
+            and any(key.isupper() for key in unlocked)
+            and session.focus is not None
+            and session.focus.islower()
+        ):
+            title = "· MAYÚSCULAS DESBLOQUEADAS ·"
+        elif unlocked[0].isupper():
+            title = "· MAYÚSCULA NUEVA ·"
+        else:
+            title = "· LETTER UNLOCKED ·"
         blink = True
     elif hi_score:
         title = "· NEW RECORD ·"
         blink = True
-    elif progress.alphabet_complete:
-        title = "· ALFABETO COMPLETO ·"
+    elif progress.keys_complete:
+        title = "· DOMINIO COMPLETO ·"
 
-    if progress.alphabet_complete:
+    if progress.keys_complete:
         current_wpm = session.wpm
         best_wpm = progress.best_wpm
         animated_current_wpm = min(
@@ -1937,7 +2030,7 @@ def draw_result(
         )
     safe_addstr(stdscr, box_y + 3, box_x, bottom, attr(Theme.MUTED))
 
-    if not progress.alphabet_complete:
+    if not progress.keys_complete:
         timing_label = "ms/pulsación"
         if focus is not None:
             cost = progress.key_cost(focus)
@@ -1993,7 +2086,7 @@ def run_result(
 
 def run_practice_session(stdscr: curses.window, progress: Progress) -> str:
     session = Session(progress, generate_lesson(progress))
-    previous_letters = set(progress.active_letters)
+    previous_keys = set(progress.active_keys)
     notice = ""
     while not session.complete:
         draw(stdscr, session, notice)
@@ -2021,10 +2114,10 @@ def run_practice_session(stdscr: curses.window, progress: Progress) -> str:
     previous_best_wpm = progress.best_wpm
     session.commit()
     progress.record_lesson_focus(session.focus)
-    if progress.alphabet_complete:
+    if progress.keys_complete:
         progress.record_wpm(session_wpm)
     unlocked = [
-        letter for letter in progress.active_letters if letter not in previous_letters
+        key for key in progress.active_keys if key not in previous_keys
     ]
     hi_score = False
     if session.focus:
@@ -2034,7 +2127,7 @@ def run_practice_session(stdscr: curses.window, progress: Progress) -> str:
             and current_best is not None
             and current_best < previous_best
         )
-    if progress.alphabet_complete and session_wpm > previous_best_wpm:
+    if progress.keys_complete and session_wpm > previous_best_wpm:
         hi_score = True
     save_progress(progress)
     return run_result(stdscr, session, progress, unlocked, hi_score)
