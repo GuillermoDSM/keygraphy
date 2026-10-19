@@ -230,13 +230,20 @@ class ProgressTests(unittest.TestCase):
 
 
 class LessonTests(unittest.TestCase):
-    def test_corpus_has_ten_thousand_frequency_ordered_words(self):
-        self.assertEqual(len(WORDS), 10_000)
+    def test_corpus_is_frequency_ordered(self):
+        self.assertEqual(len(WORDS), 9_943)
         self.assertEqual(WORDS[:5], ("de", "la", "en", "el", "que"))
+
+    def test_corpus_omits_extraction_junk(self):
+        for word in (
+            "ñanza", "xix", "wade", "https", "zación", "km", "pdf",
+            "org", "com", "edu", "cit", "op",
+        ):
+            self.assertNotIn(word, WORDS)
 
     def test_spanish_package_is_available(self):
         words = load_word_list(WORD_PACKAGES["es-la"])
-        self.assertEqual(len(words), 10_000)
+        self.assertEqual(len(words), 9_943)
         self.assertEqual(words[:5], ("de", "la", "en", "el", "que"))
 
     def test_english_package_is_available(self):
@@ -283,16 +290,38 @@ class LessonTests(unittest.TestCase):
             if not token.startswith("E"):
                 self.assertFalse(token[0].isupper())
 
-    def test_capital_lesson_fills_missing_starters_with_pseudo_words(self):
+    def test_capital_lesson_uses_real_corpus_words_only(self):
         progress = Progress()
-        index = KEY_ORDER.index("Ü")
+        index = KEY_ORDER.index("O")
         master_keys(progress, KEY_ORDER[:index])
-        self.assertEqual(progress.lesson_focus(), "Ü")
-        lesson = generate_lesson(progress, random.Random(5), target_length=120)
-        self.assertEqual({key for key in lesson if key.isupper()}, {"Ü"})
+        self.assertEqual(progress.lesson_focus(), "O")
+        lesson = generate_lesson(progress, random.Random(7), target_length=160)
+        vocabulary = set(WORDS)
         tokens = lesson.split(" ")
-        starters = sum(token.startswith("Ü") for token in tokens)
+        for token in tokens:
+            self.assertIn(token.lower(), vocabulary)
+        starters = sum(token.startswith("O") for token in tokens)
         self.assertGreaterEqual(starters, len(tokens) // 3)
+
+    def test_capital_lesson_prefers_the_most_common_starters(self):
+        progress = Progress()
+        index = KEY_ORDER.index("O")
+        master_keys(progress, KEY_ORDER[:index])
+        lesson = generate_lesson(progress, random.Random(8), target_length=200)
+        common = [word for word in WORDS if word.startswith("o")][:40]
+        capitalised = [token for token in lesson.split(" ") if token[0].isupper()]
+        self.assertGreaterEqual(len(capitalised), len(lesson.split(" ")) // 3)
+        for token in capitalised:
+            self.assertIn(token.lower(), common)
+
+    def test_every_capital_key_starts_a_real_word(self):
+        capitals = KEY_ORDER[len(LETTER_ORDER):-2]
+        for capital in capitals:
+            self.assertTrue(
+                any(word.startswith(capital.lower()) for word in WORDS),
+                capital,
+            )
+        self.assertNotIn("Ü", capitals)
 
     def test_period_lesson_marks_and_capitalizes_sentences(self):
         progress = Progress()

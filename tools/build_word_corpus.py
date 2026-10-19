@@ -32,8 +32,19 @@ ALPHABET = set("abcdefghijklmnñopqrstuvwxyzáéíóúü")
 ALPHABET_ORDER = "abcdefghijklmnñopqrstuvwxyzáéíóúü"
 TOKEN_RE = re.compile(r"[^\W\d_]+", re.UNICODE)
 URL_RE = re.compile(r"(?:https?://|www\.)\S+", re.IGNORECASE)
-# Filter recurring English boilerplate and PDF extraction fragments.
-EXCLUDED_TOKENS = frozenset({"under", "licensed", "vol", "ción", "df"})
+# Filter recurring English boilerplate, format names, and PDF extraction
+# fragments that are not Spanish words.
+EXCLUDED_TOKENS = frozenset({
+    "under", "licensed", "vol", "df", "wade", "can", "role", "net",
+    "ñanza", "ciales", "expre", "ción", "ciones", "cación", "mación",
+    "tación", "trucción", "zación", "taciones", "vación", "lución",
+    "dición", "ducción", "zado", "lización", "zaciones", "xix",
+    "pp", "vv", "cfr", "https", "http", "html", "php", "jpg", "pdf",
+    "st", "km", "mx", "cm", "vn", "th", "kg", "ss", "ms",
+    "org", "com", "edu", "cit", "op", "jes", "ba", "ben", "des", "nes",
+    "est", "men", "bre", "tes", "cia", "doi", "ob",
+})
+VOWEL_LETTERS = frozenset("aeiouáéíóúüy")
 IGNORED_HTML_TAGS = {
     "aside",
     "button",
@@ -250,7 +261,7 @@ def tokens_from_text(text: str) -> Counter[str]:
         word = unicodedata.normalize("NFC", raw.casefold())
         if len(word) < 2 or not set(word) <= ALPHABET:
             continue
-        if word in EXCLUDED_TOKENS:
+        if word in EXCLUDED_TOKENS or not set(word) & VOWEL_LETTERS:
             continue
         # Keep sentence-initial common words while dropping likely proper names.
         if raw[0].isupper() and not is_sentence_start(text, match.start()):

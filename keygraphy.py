@@ -23,6 +23,7 @@ APP_NAME = "keygraphy"
 VERSION = "0.5.0"
 LETTER_ORDER = ""
 KEY_ORDER = ""
+CAPITAL_ORDER = ""
 LETTER_ORDERS = {
     "es-la": "eaosnirldctumpgbvóqfhíájzéyxñúkwü",
     "en-us": "eiasnrtolcdpumghbyfvwkxjqz",
@@ -62,6 +63,7 @@ MAX_FREQUENT_WORDS = 1000
 FOCUSED_WORD_RATIO = 0.5
 FOCUSED_MARK_RATIO = 0.35
 REVIEW_MARK_RATIO = 0.12
+CAPITAL_STARTER_LIMIT = 40
 POST_ALPHABET_FOCUS_SESSIONS = 3
 DATA_DIR = Path(__file__).resolve().parent / "data"
 BOOK_DIR = DATA_DIR / "books"
@@ -181,11 +183,16 @@ WORDS: tuple[str, ...] = ()
 
 
 def select_word_package(name: str) -> None:
-    global KEY_ORDER, LETTER_ORDER, WORDS
+    global CAPITAL_ORDER, KEY_ORDER, LETTER_ORDER, WORDS
     WORDS = load_word_list(WORD_PACKAGES[name])
     LETTER_ORDER = load_letter_order(WORD_PACKAGES[name], LETTER_ORDERS[name])
     LETTER_ORDERS[name] = LETTER_ORDER
-    KEY_ORDER = LETTER_ORDER + LETTER_ORDER.upper() + PUNCTUATION_ORDERS[name]
+    CAPITAL_ORDER = "".join(
+        letter.upper()
+        for letter in LETTER_ORDER
+        if any(word.startswith(letter) for word in WORDS)
+    )
+    KEY_ORDER = LETTER_ORDER + CAPITAL_ORDER + PUNCTUATION_ORDERS[name]
 
 
 select_word_package(DEFAULT_WORD_PACKAGE)
@@ -738,7 +745,7 @@ def alphabet_complete(active_letters: str) -> bool:
 
 
 def capitals_complete(active_keys: str) -> bool:
-    return set(LETTER_ORDER.upper()) <= set(active_keys)
+    return set(CAPITAL_ORDER) <= set(active_keys)
 
 
 def build_word_pool(
@@ -776,12 +783,12 @@ def build_word_pool(
     return pool
 
 
-def build_capital_pool(
+def generate_capital_lesson(
     active_keys: str,
     focus: str,
     rng: random.Random,
-) -> list[str]:
-    """Words for a capital focus, half starting with its letter."""
+    target_length: int,
+) -> str:
     focus_letter = focus.lower()
     allowed = set(active_keys) | {key.lower() for key in active_keys}
     eligible = [
@@ -791,37 +798,24 @@ def build_capital_pool(
         and len(word) > 1
         and set(word) <= allowed
     ]
-    starters = [word for word in eligible if word.startswith(focus_letter)]
-    general = [word for word in eligible if not word.startswith(focus_letter)]
-    focused_limit = round(MAX_FREQUENT_WORDS * FOCUSED_WORD_RATIO)
-    general_limit = MAX_FREQUENT_WORDS - focused_limit
-    if len(starters) < focused_limit:
-        letters = "".join(key for key in active_keys if key.islower())
-        known = set(starters)
-        while len(starters) < focused_limit:
-            word = focus_letter + pseudo_word(letters, None, rng)
-            if word not in known:
-                known.add(word)
-                starters.append(word)
-    return starters[:focused_limit] + general[:general_limit]
-
-
-def generate_capital_lesson(
-    active_keys: str,
-    focus: str,
-    rng: random.Random,
-    target_length: int,
-) -> str:
-    focus_letter = focus.lower()
-    pool = build_capital_pool(active_keys, focus, rng)
+    starters = [
+        word for word in eligible if word.startswith(focus_letter)
+    ][:CAPITAL_STARTER_LIMIT]
+    general = [
+        word for word in eligible if not word.startswith(focus_letter)
+    ][:MAX_FREQUENT_WORDS]
+    starter_weights = [1 / (index + 1) for index in range(len(starters))]
     result: list[str] = []
     length = 0
 
     while length < target_length:
-        word = rng.choice(pool)
-        if result and result[-1].lower() == word:
+        if starters and (not general or rng.random() < FOCUSED_WORD_RATIO):
+            word = rng.choices(starters, weights=starter_weights, k=1)[0]
+            token = word.capitalize()
+        else:
+            token = rng.choice(general)
+        if result and result[-1].lower() == token.lower():
             continue
-        token = word.capitalize() if word.startswith(focus_letter) else word
         result.append(token)
         length += len(token) + (1 if len(result) > 1 else 0)
     return " ".join(result)
@@ -965,9 +959,9 @@ class Session:
         if (
             correct
             and not is_trigger
-            # Punctuation stays recordable for every package so statistics
-            # survive word package switches; generation gates the phases.
-            and expected in KEY_ORDER + ",.'"
+            # Record every character that can appear in a lesson, even when
+            # it is not part of the current package progression.
+            and expected in LETTER_ORDER + LETTER_ORDER.upper() + ",.'"
         ):
             sample = self.letter_samples.setdefault(expected, LessonSample())
             sample.hits += 1

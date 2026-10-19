@@ -8,7 +8,7 @@
     "historia": 3,
     "negocios": 3
   },
-  "word_count": 10000,
+  "word_count": 9943,
   "candidate_count": 51927,
   "minimum_source_coverage": 2,
   "scoring": {
@@ -1199,5 +1199,5 @@
       "unique_word_count": 8160
     }
   ],
-  "sha256": "41663cba948aff117abd87c885ec5f2c71ac6b86182981f864d16886743e8632"
+  "sha256": "23ac8920d8bbb3661fc0aa5482fa25496ab55025dd46218f2f39e0c72febce4f"
 }

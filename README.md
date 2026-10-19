@@ -4,7 +4,7 @@ Minimal adaptive typing practice for Linux terminals. Keygraphy focuses lessons
 on the least confident key and adds a new one after every active key has
 reached the target speed.
 
-By default, lessons use a 10,000-word `es-LA` corpus ranked from contemporary
+By default, lessons use a 9,943-word `es-LA` corpus ranked from contemporary
 multi-source language data. An `en-US` package is also available. Words are
 filtered to the currently unlocked letters. If fewer than 15 contain the focus
 letter, the remaining slots are filled with generated pseudowords.
@@ -24,7 +24,9 @@ The curriculum advances in three phases, one key at a time:
 1. Letters. Six lowercase letters start; new ones arrive in frequency order
    until the alphabet is complete.
 2. Capitals. The same order again, each trained at the start of words; about
-   half the words begin with the focus capital.
+   half the words begin with the focus capital. Only capitals that begin at
+   least one corpus word are included, and practice draws on the 40 most common
+   ones so lessons stay natural.
 3. Punctuation. The period, then the comma, and finally the apostrophe in the
    `en-US` package only, using a curated list of real contractions (`don't`,
    `it's`, `I'm`...). Marks attach to word ends, a period capitalizes the next

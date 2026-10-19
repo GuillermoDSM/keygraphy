@@ -1,6 +1,6 @@
 # Corpus
 
-The default `es-LA` practice corpus contains 10,000 words ranked from nine
+The default `es-LA` practice corpus contains 9,943 words ranked from nine
 modern Spanish-language open books. The books were published in 1970 or later
 and are distributed under CC BY 4.0. The locale name describes the application
 package; the sources represent Spanish across Spain and Latin America.
@@ -11,7 +11,10 @@ The builder is `tools/build_word_corpus.py`. HTML books are crawled within the
 declared book path. PDF books are converted with `pdftotext`. Text is normalized
 to Unicode NFC, URLs and numeric footnote markers are removed, and tokens are
 restricted to Spanish letters, including `áéíóúüñ`. Recurring English
-boilerplate and PDF extraction fragments are excluded before ranking.
+boilerplate, format names, URL fragments, and tokens without vowels are
+excluded before ranking; the builder also drops the most common PDF extraction
+fragments, which is why the shipped list has 9,943 entries instead of the
+builder's 10,000-word target.
 
 For each source, a word frequency is calculated as:
 
