@@ -764,6 +764,26 @@ class BookTests(unittest.TestCase):
         self.assertEqual(len(ranges), 2)
         self.assertTrue(any(start <= text.index("siete") < end for start, end in ranges))
 
+    def test_book_view_moves_the_next_line_up_after_completing_one(self):
+        text = (
+            "uno dos tres cuatro cinco seis siete ocho nueve diez once doce "
+            "trece catorce quince dieciséis diecisiete dieciocho"
+        )
+        ranges = wrap_book_ranges(text, 10)
+        self.assertGreaterEqual(len(ranges), 3)
+        self.assertEqual(visible_book_ranges(text, 10, ranges[0][0]), ranges[:2])
+        self.assertEqual(visible_book_ranges(text, 10, ranges[1][0]), ranges[1:3])
+
+    def test_book_view_keeps_the_final_line_on_the_bottom_row(self):
+        text = (
+            "uno dos tres cuatro cinco seis siete ocho nueve diez once doce "
+            "trece catorce quince dieciséis diecisiete dieciocho"
+        )
+        ranges = wrap_book_ranges(text, 10)
+        self.assertGreaterEqual(len(ranges), 3)
+        self.assertEqual(visible_book_ranges(text, 10, ranges[-1][0]), ranges[-2:])
+        self.assertEqual(visible_book_ranges(text, 10, len(text)), ranges[-2:])
+
     def test_book_line_width_fits_the_minimum_terminal(self):
         self.assertEqual(book_text_width(42), 34)
         self.assertEqual(book_text_width(100), BOOK_LINE_WIDTH)

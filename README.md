@@ -85,7 +85,9 @@ next; as accuracy improves, punctuation groups are added one at a time until the
 edition is transcribed exactly. Book statistics are independent from adaptive
 letter progress. Each exercise fills at least two lines, continues to the end of
 the current sentence, and then waits for `Enter`. The interface keeps two lines
-visible at a time while longer sentences scroll in reading order, and the
+visible at a time: the line being typed stays on the top row with the next line
+below, so each completed line moves up as the following one takes its place. The
+final line stays on the bottom row, where `Enter` finishes the fragment, and the
 fragment counter advances in the header.
 
 Reset all progress with:

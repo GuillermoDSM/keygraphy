@@ -1742,7 +1742,7 @@ def visible_book_ranges(
             max(0, len(ranges) - 1),
         ),
     )
-    first_row = max(0, min(active_row - 1, len(ranges) - 2))
+    first_row = max(0, min(active_row, len(ranges) - 2))
     return ranges[first_row : first_row + 2]
 
 
