@@ -66,16 +66,17 @@ to:
 ~/.local/share/keygraphy/stats.json
 ```
 
-Press `Esc` to open options. Choose a mode and its source: adaptive practice
-offers the `es-LA` and `en-US` word packages and an adjustable 15-150 WPM target,
-while book
-transcription offers bundled books. Use the up/down arrows to choose a setting,
-left/right to change it (in 5 WPM steps for the target), `Enter` to apply, and
-`Esc` to cancel. In practice,
-`Ver teclado` selects either the letter bar or the compact color-coded keyboard
-shown below the lesson. New installations use the keyboard by default; the
-selection is saved with progress.
-Selections and book positions are restored on the next run.
+Press `Esc` to open options. The interface starts in English; `Language`
+switches between English and Español, and `Keyboard` selects the on-screen
+Spanish or US layout without changing key costs or lesson text. Choose a mode
+and its source: adaptive practice offers the `es-LA` and `en-US` word packages
+and an adjustable 15-150 WPM target, while book transcription offers bundled
+books. Use the up/down arrows to choose a setting, left/right to change it (in
+5 WPM steps for the target), `Enter` to apply, and `Esc` to cancel. In practice,
+`Keyboard view` selects either the letter bar or the compact color-coded
+keyboard shown below the lesson. New installations use the keyboard by default;
+the selection is saved with progress. Selections, languages, keyboard layouts,
+and book positions are restored on the next run.
 `Ctrl+S` is intentionally not used because many Unix terminals reserve it for
 software flow control (XOFF).
 

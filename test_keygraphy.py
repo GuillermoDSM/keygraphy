@@ -14,12 +14,15 @@ from keygraphy import (
     BOOK_LEVEL_MIN_ATTEMPTS,
     BOOK_LEVELS,
     BOOK_LINE_WIDTH,
+    DEFAULT_UI_LANGUAGE,
     Book,
     BookPosition,
     BookSection,
     BookSession,
     INITIAL_LETTERS,
     KEYBOARD_FINGER_BY_KEY,
+    KEYBOARD_FINGER_COUNT,
+    KEYBOARD_FINGER_GROUPS,
     KEYBOARD_ROWS,
     KEY_ORDER,
     LETTER_ORDER,
@@ -65,6 +68,7 @@ from keygraphy import (
     run_result,
     save_progress,
     select_word_package,
+    set_ui_language,
     unlock_feedback,
     visible_book_ranges,
     wrap_book_ranges,
@@ -80,6 +84,11 @@ def master_keys(progress: Progress, keys: str = KEY_ORDER) -> None:
 class ProgressTests(unittest.TestCase):
     def test_new_progress_defaults_to_keyboard_view(self):
         self.assertEqual(Progress().keyboard_view, "keyboard")
+
+    def test_new_progress_defaults_to_english_ui_and_spanish_keyboard(self):
+        progress = Progress()
+        self.assertEqual(progress.ui_language, "en")
+        self.assertEqual(progress.keyboard_language, "es")
 
     def test_result_fraction_measures_closeness_to_target(self):
         self.assertEqual(result_fraction(343, 343), 1.0)
@@ -198,12 +207,22 @@ class ProgressTests(unittest.TestCase):
         progress = Progress()
         feedback = unlock_feedback(progress)
         self.assertNotIn("Foco", feedback)
-        self.assertIn("actual -- ms", feedback)
-        self.assertIn("mejor -- ms", feedback)
-        self.assertIn("objetivo 343 ms", feedback)
+        self.assertIn("current -- ms", feedback)
+        self.assertIn("best -- ms", feedback)
+        self.assertIn("target 343 ms", feedback)
 
     def test_unlock_feedback_reports_completed_keys(self):
         progress = Progress()
+        master_keys(progress)
+        self.assertEqual(unlock_feedback(progress), "All keys mastered")
+
+    def test_unlock_feedback_uses_the_selected_ui_language(self):
+        self.addCleanup(set_ui_language, DEFAULT_UI_LANGUAGE)
+        progress = Progress(ui_language="es")
+        feedback = unlock_feedback(progress)
+        self.assertIn("actual -- ms", feedback)
+        self.assertIn("mejor -- ms", feedback)
+        self.assertIn("objetivo 343 ms", feedback)
         master_keys(progress)
         self.assertEqual(unlock_feedback(progress), "Todas las teclas dominadas")
 
@@ -610,7 +629,7 @@ class KeyTimingTests(unittest.TestCase):
         with patch("keygraphy.safe_addstr") as output, patch("keygraphy.attr", return_value=0):
             draw_result(window, session, progress, [], False, 1000)
         texts = [call.args[3] for call in output.call_args_list]
-        self.assertIn("ms/pulsación · 600 ms total / 3", texts)
+        self.assertIn("ms/keystroke · 600 ms total / 3", texts)
         self.assertTrue(any("200 ms" in text for text in texts))
 
 
@@ -718,7 +737,7 @@ class BookTests(unittest.TestCase):
         session = BookSession("hola", 0)
         for character in "hola":
             session.add(character, now=1.0)
-        self.assertEqual(record_book_session(progress, session), "tildes")
+        self.assertEqual(record_book_session(progress, session), "accents")
         self.assertEqual(progress.book_level, 1)
         self.assertEqual(progress.book_level_attempts, 0)
 
@@ -886,23 +905,23 @@ class ModeSwitchTests(unittest.TestCase):
 
         rendered = [call.args[3] for call in addstr.call_args_list]
         styles = [call.args[0] for call in style.call_args_list]
-        self.assertEqual(KEYBOARD_ROWS[0], tuple("qwertyuiop´¨"))
-        self.assertEqual(KEYBOARD_ROWS[1], tuple("asdfghjklñ"))
-        self.assertEqual(KEYBOARD_ROWS[2], tuple("zxcvbnm,.-'"))
+        self.assertEqual(KEYBOARD_ROWS["es"][0], tuple("qwertyuiop´¨"))
+        self.assertEqual(KEYBOARD_ROWS["es"][1], tuple("asdfghjklñ"))
+        self.assertEqual(KEYBOARD_ROWS["es"][2], tuple("zxcvbnm,.-'"))
         self.assertEqual(
-            {KEYBOARD_FINGER_BY_KEY[key] for key in "qazpñ-´'"},
+            {KEYBOARD_FINGER_BY_KEY["es"][key] for key in "qazpñ-´'"},
             {0},
         )
         self.assertEqual(
-            {KEYBOARD_FINGER_BY_KEY[key] for key in "wsxol."},
+            {KEYBOARD_FINGER_BY_KEY["es"][key] for key in "wsxol."},
             {1},
         )
         self.assertEqual(
-            {KEYBOARD_FINGER_BY_KEY[key] for key in "edcik,"},
+            {KEYBOARD_FINGER_BY_KEY["es"][key] for key in "edcik,"},
             {2},
         )
         self.assertEqual(
-            {KEYBOARD_FINGER_BY_KEY[key] for key in "rfvtgbyhnujm"},
+            {KEYBOARD_FINGER_BY_KEY["es"][key] for key in "rfvtgbyhnujm"},
             {3},
         )
         self.assertTrue(
@@ -961,11 +980,43 @@ class ModeSwitchTests(unittest.TestCase):
         self.assertIn(" . ", rendered)
         self.assertNotIn("SPACE", rendered)
 
+    def test_keyboard_layouts_define_keys_for_every_finger(self):
+        self.assertEqual(KEYBOARD_FINGER_COUNT, 4)
+        for language, rows in KEYBOARD_ROWS.items():
+            self.assertEqual(
+                KEYBOARD_FINGER_COUNT,
+                len(KEYBOARD_FINGER_GROUPS[language]),
+            )
+            self.assertEqual(
+                {key for row in rows for key in row},
+                set(KEYBOARD_FINGER_BY_KEY[language]),
+            )
+
+    def test_english_keyboard_layout_uses_us_keys(self):
+        progress = Progress(keyboard_language="en")
+        window = Mock()
+        window.getmaxyx.return_value = (10, 80)
+
+        with patch("keygraphy.safe_addstr") as addstr, patch(
+            "keygraphy.attr", return_value=0
+        ):
+            draw_keyboard_layout(window, progress, "ñ", 1)
+
+        rendered = [call.args[3] for call in addstr.call_args_list]
+        self.assertEqual(KEYBOARD_ROWS["en"][0], tuple("qwertyuiop[]"))
+        self.assertEqual(KEYBOARD_ROWS["en"][1], tuple("asdfghjkl;'"))
+        self.assertEqual(KEYBOARD_ROWS["en"][2], tuple("zxcvbnm,./-"))
+        self.assertIn(" ; ", rendered)
+        self.assertIn(" / ", rendered)
+        self.assertIn("[n]", rendered)
+        self.assertNotIn(" ñ ", rendered)
+        self.assertNotIn(" ´ ", rendered)
+
     def test_options_selects_keyboard_view(self):
         progress = Progress()
         window = Mock()
         window.getmaxyx.return_value = (24, 80)
-        window.get_wch.side_effect = ["j", "j", "j", "h", "\n"]
+        window.get_wch.side_effect = ["j", "j", "j", "j", "j", "h", "\n"]
 
         with (
             patch("keygraphy.safe_addstr"),
@@ -981,6 +1032,8 @@ class ModeSwitchTests(unittest.TestCase):
                 progress.selected_book,
                 progress.target_wpm,
                 "letters",
+                progress.ui_language,
+                progress.keyboard_language,
             ),
         )
 
@@ -988,7 +1041,7 @@ class ModeSwitchTests(unittest.TestCase):
         progress = Progress()
         window = Mock()
         window.getmaxyx.return_value = (24, 80)
-        window.get_wch.side_effect = ["j", "j", "j", " ", "\n"]
+        window.get_wch.side_effect = ["j", "j", "j", "j", "j", " ", "\n"]
 
         with (
             patch("keygraphy.safe_addstr"),
@@ -1003,7 +1056,7 @@ class ModeSwitchTests(unittest.TestCase):
         progress = Progress()
         window = Mock()
         window.getmaxyx.return_value = (24, 80)
-        window.get_wch.side_effect = ["j", "j", "j", "h", "\x1b"]
+        window.get_wch.side_effect = ["j", "j", "j", "j", "j", "h", "\x1b"]
 
         with (
             patch("keygraphy.safe_addstr"),
@@ -1012,6 +1065,39 @@ class ModeSwitchTests(unittest.TestCase):
             result = choose_options(window, progress)
 
         self.assertEqual(result[4], "keyboard")
+
+    def test_options_cycles_ui_language_and_keyboard_layout(self):
+        self.addCleanup(set_ui_language, DEFAULT_UI_LANGUAGE)
+        progress = Progress()
+        window = Mock()
+        window.getmaxyx.return_value = (24, 80)
+        window.get_wch.side_effect = ["h", "j", "l", "\n"]
+
+        with (
+            patch("keygraphy.safe_addstr"),
+            patch("keygraphy.attr", return_value=0),
+        ):
+            result = choose_options(window, progress)
+
+        self.assertEqual(result[5], "es")
+        self.assertEqual(result[6], "en")
+
+    def test_options_shows_language_rows_without_the_removed_help_line(self):
+        progress = Progress()
+        window = Mock()
+        window.getmaxyx.return_value = (24, 80)
+        window.get_wch.side_effect = ["\x1b"]
+
+        with patch("keygraphy.safe_addstr") as addstr, patch(
+            "keygraphy.attr", return_value=0
+        ):
+            choose_options(window, progress)
+
+        rendered = [call.args[3] for call in addstr.call_args_list]
+        self.assertTrue(any("Language" in text for text in rendered))
+        self.assertTrue(any("Keyboard" in text for text in rendered))
+        self.assertFalse(any("↑↓" in text for text in rendered))
+        self.assertFalse(any("Esc cancelar" in text for text in rendered))
 
     def test_practice_footer_uses_keyboard_view_when_selected(self):
         progress = Progress(keyboard_view="keyboard")
@@ -1050,8 +1136,27 @@ class ModeSwitchTests(unittest.TestCase):
             draw(window, session)
 
         rendered = [call.args[3] for call in addstr.call_args_list]
-        self.assertIn("⇧ Mayús", rendered)
+        self.assertIn("⇧ Shift", rendered)
         self.assertTrue(any("[E]" in text for text in rendered))
+
+    def test_practice_uses_spanish_shift_hint_when_selected(self):
+        progress = Progress(ui_language="es")
+        master_keys(progress, LETTER_ORDER)
+        session = Session(
+            progress,
+            generate_lesson(progress, random.Random(3), target_length=80),
+        )
+        window = Mock()
+        window.getmaxyx.return_value = (24, 80)
+
+        with (
+            patch("keygraphy.safe_addstr") as addstr,
+            patch("keygraphy.attr", return_value=0),
+        ):
+            draw(window, session)
+
+        rendered = [call.args[3] for call in addstr.call_args_list]
+        self.assertIn("⇧ Mayús", rendered)
 
     def test_keyboard_marks_accented_capital_focus(self):
         progress = Progress()
@@ -1141,6 +1246,8 @@ class ModeSwitchTests(unittest.TestCase):
                     progress.selected_book,
                     progress.target_wpm,
                     "letters",
+                    "es",
+                    "en",
                 ),
             ),
             patch("keygraphy.save_progress") as save,
@@ -1149,6 +1256,8 @@ class ModeSwitchTests(unittest.TestCase):
 
         self.assertTrue(changed)
         self.assertEqual(progress.keyboard_view, "letters")
+        self.assertEqual(progress.ui_language, "es")
+        self.assertEqual(progress.keyboard_language, "en")
         save.assert_called_once_with(progress)
 
     def test_book_view_shows_statistics_at_the_bottom_without_options_hint(self):
@@ -1167,10 +1276,30 @@ class ModeSwitchTests(unittest.TestCase):
 
         rendered = [call.args[1:] for call in addstr.call_args_list]
         self.assertIn(
-            (23, 3, "Nivel: tildes · 325/500 pulsaciones · 96%/95%", 0),
+            (23, 3, "Level: accents · 325/500 keystrokes · 96%/95%", 0),
             rendered,
         )
         self.assertFalse(any("Esc opciones" in args[2] for args in rendered))
+
+    def test_book_view_uses_spanish_statistics_when_selected(self):
+        progress = Progress(mode="book", book_level=1, ui_language="es")
+        progress.book_level_attempts = 325
+        progress.book_level_correct = 312
+        book = Book("test", "Test", (BookSection("Uno", ("hola",)),))
+        session = BookSession("hola", progress.book_level)
+        window = Mock()
+        window.getmaxyx.return_value = (24, 80)
+
+        with patch("keygraphy.safe_addstr") as addstr, patch(
+            "keygraphy.attr", return_value=0
+        ):
+            draw_book(window, progress, book, session)
+
+        rendered = [call.args[1:] for call in addstr.call_args_list]
+        self.assertIn(
+            (23, 3, "Nivel: tildes · 325/500 pulsaciones · 96%/95%", 0),
+            rendered,
+        )
 
     def test_target_speed_changes_in_five_wpm_steps_and_stays_in_range(self):
         self.assertEqual(change_target_wpm(35, 1), 40)
@@ -1332,8 +1461,8 @@ class ResultTests(unittest.TestCase):
         with patch("keygraphy.safe_addstr") as output, patch("keygraphy.attr", return_value=0):
             draw_result(self._window(), session, progress, [], True, 0)
         text = "".join(call.args[3] for call in output.call_args_list)
-        self.assertIn("NUEVO RÉCORD", text)
-        self.assertIn("ppm", text)
+        self.assertIn("NEW RECORD", text)
+        self.assertIn("wpm", text)
         self.assertNotIn("[ü]", text)
         self.assertTrue(any("\u2801" <= c <= "\u28ff" for c in text))
 
@@ -1347,7 +1476,7 @@ class ResultTests(unittest.TestCase):
         ):
             draw_result(self._window(), session, progress, ["E"], False, 0)
         text = "".join(call.args[3] for call in output.call_args_list)
-        self.assertIn("MAYÚSCULAS DESBLOQUEADAS", text)
+        self.assertIn("CAPITALS UNLOCKED", text)
 
         progress.letters["E"] = LetterStat(time_ms=200, best_time_ms=200)
         session = Session(progress, "casa")
@@ -1357,7 +1486,7 @@ class ResultTests(unittest.TestCase):
         ):
             draw_result(self._window(), session, progress, ["A"], False, 0)
         text = "".join(call.args[3] for call in output.call_args_list)
-        self.assertIn("MAYÚSCULA NUEVA", text)
+        self.assertIn("NEW CAPITAL", text)
 
     def test_result_titles_mark_sign_transitions(self):
         progress = Progress()
@@ -1370,7 +1499,7 @@ class ResultTests(unittest.TestCase):
         ):
             draw_result(self._window(), session, progress, ["."], False, 0)
         text = "".join(call.args[3] for call in output.call_args_list)
-        self.assertIn("SIGNOS DESBLOQUEADOS", text)
+        self.assertIn("MARKS UNLOCKED", text)
         self.assertIn(f"[{KEY_ORDER[-3]}]", text)
 
         progress.letters["."] = LetterStat(time_ms=200, best_time_ms=200)
@@ -1381,7 +1510,7 @@ class ResultTests(unittest.TestCase):
         ):
             draw_result(self._window(), session, progress, [","], False, 0)
         text = "".join(call.args[3] for call in output.call_args_list)
-        self.assertIn("SIGNO NUEVO", text)
+        self.assertIn("NEW MARK", text)
 
         progress.letters[","] = LetterStat(time_ms=200, best_time_ms=200)
         session = Session(progress, "casa")
@@ -1391,7 +1520,21 @@ class ResultTests(unittest.TestCase):
         ):
             draw_result(self._window(), session, progress, [], False, 0)
         text = "".join(call.args[3] for call in output.call_args_list)
-        self.assertIn("DOMINIO COMPLETO", text)
+        self.assertIn("ALL KEYS MASTERED", text)
+
+    def test_result_titles_use_spanish_when_selected(self):
+        progress = Progress(ui_language="es")
+        master_keys(progress)
+        session = Session(progress, "casa")
+        session.focus = "ü"
+        with patch("keygraphy.safe_addstr") as output, patch(
+            "keygraphy.attr", return_value=0
+        ):
+            draw_result(self._window(), session, progress, [], True, 0)
+        text = "".join(call.args[3] for call in output.call_args_list)
+        self.assertIn("NUEVO RÉCORD", text)
+        self.assertIn("ppm", text)
+        self.assertIn("ACTUAL", text)
 
     def _window(self):
         window = Mock()
@@ -1483,7 +1626,7 @@ class ResultTests(unittest.TestCase):
             draw_result(window, session, progress, [], False, 100)
 
         rendered = [call.args[3] for call in addstr.call_args_list]
-        self.assertTrue(any("ppm" in text for text in rendered))
+        self.assertTrue(any("wpm" in text for text in rendered))
         self.assertTrue(any("45" in text for text in rendered))
 
     def test_escape_restores_blocking_input_before_opening_options(self):
@@ -1511,7 +1654,12 @@ class PersistenceTests(unittest.TestCase):
     def test_round_trip(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "stats.json"
-            progress = Progress(word_package="es-la", keyboard_view="letters")
+            progress = Progress(
+                word_package="es-la",
+                keyboard_view="letters",
+                ui_language="es",
+                keyboard_language="en",
+            )
             progress.stat("e").append_lesson(1, 0, 220)
             progress.best_wpm_by_package["es-la"] = 42
             progress.post_alphabet_focus = "e"
@@ -1523,6 +1671,8 @@ class PersistenceTests(unittest.TestCase):
             self.assertEqual(loaded.stat("e").best_time_ms, 220)
             self.assertEqual(loaded.word_package, "es-la")
             self.assertEqual(loaded.keyboard_view, "letters")
+            self.assertEqual(loaded.ui_language, "es")
+            self.assertEqual(loaded.keyboard_language, "en")
             self.assertEqual(loaded.best_wpm, 42)
             self.assertEqual(loaded.post_alphabet_focus, "e")
             self.assertEqual(loaded.post_alphabet_focus_sessions, 2)
@@ -1559,7 +1709,21 @@ class PersistenceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "stats.json"
             path.write_text('{"word_package": "es-la"}', encoding="utf-8")
-            self.assertEqual(load_progress(path).keyboard_view, "letters")
+            loaded = load_progress(path)
+            self.assertEqual(loaded.keyboard_view, "letters")
+            self.assertEqual(loaded.ui_language, "en")
+            self.assertEqual(loaded.keyboard_language, "es")
+
+    def test_invalid_saved_languages_use_defaults(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "stats.json"
+            path.write_text(
+                '{"ui_language": "fr", "keyboard_language": "de"}',
+                encoding="utf-8",
+            )
+            loaded = load_progress(path)
+            self.assertEqual(loaded.ui_language, "en")
+            self.assertEqual(loaded.keyboard_language, "es")
 
     def test_invalid_saved_word_package_uses_default(self):
         with tempfile.TemporaryDirectory() as directory:

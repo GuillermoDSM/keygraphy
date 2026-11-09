@@ -71,19 +71,16 @@ WORD_PACKAGES = {
     "es-la": DATA_DIR / "words-es-la.json",
     "en-us": DATA_DIR / "words-en-us.json",
 }
-WORD_PACKAGE_LABELS = {
-    "es-la": "Español · Latinoamérica",
-    "en-us": "English · United States",
-}
 DEFAULT_WORD_PACKAGE = "es-la"
 MODES = ("practice", "book")
-MODE_LABELS = {"practice": "Práctica adaptativa", "book": "Transcribir libro"}
 KEYBOARD_VIEWS = ("letters", "keyboard")
-KEYBOARD_VIEW_LABELS = {
-    "letters": "Barra de letras",
-    "keyboard": "Teclado",
-}
 DEFAULT_KEYBOARD_VIEW = "keyboard"
+UI_LANGUAGES = ("en", "es")
+DEFAULT_UI_LANGUAGE = "en"
+UI_LANGUAGE_LABELS = {"en": "English", "es": "Español"}
+KEYBOARD_LANGUAGES = ("es", "en")
+DEFAULT_KEYBOARD_LANGUAGE = "es"
+KEYBOARD_LANGUAGE_LABELS = {"es": "Español", "en": "English (US)"}
 BOOK_PATHS = {
     "la-iliada": BOOK_DIR / "la-iliada.json",
     "la-odisea": BOOK_DIR / "la-odisea.json",
@@ -94,20 +91,146 @@ BOOK_LEVEL_MIN_ATTEMPTS = 500
 BOOK_LEVEL_ACCURACY = 0.95
 BOOK_LINE_WIDTH = 72
 BOOK_LEVELS = (
-    ("solo palabras", ""),
-    ("tildes", ""),
-    ("coma", ","),
-    ("punto", "."),
-    ("punto y coma", ";"),
-    ("dos puntos", ":"),
-    ("interrogación", "¿?"),
-    ("exclamación", "¡!"),
-    ("guiones", "-—"),
-    ("comillas", "\"'«»“”"),
-    ("paréntesis", "()"),
-    ("texto completo", "*"),
+    ("words", ""),
+    ("accents", ""),
+    ("comma", ","),
+    ("period", "."),
+    ("semicolon", ";"),
+    ("colon", ":"),
+    ("question", "¿?"),
+    ("exclamation", "¡!"),
+    ("dashes", "-—"),
+    ("quotes", "\"'«»“”"),
+    ("parentheses", "()"),
+    ("complete", "*"),
 )
 UNTILDED_TRANSLATION = str.maketrans("áéíóúü", "aeiouu")
+UI_LANGUAGE = DEFAULT_UI_LANGUAGE
+TRANSLATIONS = {
+    "en": {
+        "options.title": "Options",
+        "options.language": "Language",
+        "options.keyboard": "Keyboard",
+        "options.mode": "Mode",
+        "options.source": "Source",
+        "options.target": "Target",
+        "options.keyboard_view": "Keyboard view",
+        "mode.practice": "Adaptive practice",
+        "mode.book": "Book transcription",
+        "view.letters": "Letter bar",
+        "view.keyboard": "Keyboard",
+        "package.es-la": "Spanish · Latin America",
+        "package.en-us": "English · United States",
+        "unit.wpm": "wpm",
+        "terminal.too_small": "Terminal too small (minimum 42x10)",
+        "shift": "⇧ Shift",
+        "restart.exercise": "Exercise restarted",
+        "restart.fragment": "Fragment restarted",
+        "practice.all_mastered": "All keys mastered",
+        "practice.feedback": (
+            "current {current} ms · best {best} ms · target {target} ms/keystroke"
+        ),
+        "book.level": "Level: {label}",
+        "book.level_progress": (
+            "Level: {label} · {attempts}/{minimum} keystrokes · "
+            "{accuracy:.0%}/{target:.0%}"
+        ),
+        "book.fragment": "fragment {current}/{total}",
+        "book.completed": "{title} completed",
+        "book_level.words": "words only",
+        "book_level.accents": "accents",
+        "book_level.comma": "comma",
+        "book_level.period": "period",
+        "book_level.semicolon": "semicolon",
+        "book_level.colon": "colon",
+        "book_level.question": "question marks",
+        "book_level.exclamation": "exclamation marks",
+        "book_level.dashes": "dashes",
+        "book_level.quotes": "quotes",
+        "book_level.parentheses": "parentheses",
+        "book_level.complete": "full text",
+        "result.current": "CURRENT",
+        "result.best": "BEST",
+        "result.target": "TARGET",
+        "result.unit_ms": "ms",
+        "result.ms_keystroke": "ms/keystroke",
+        "result.title.mastery": "· ALL KEYS MASTERED ·",
+        "result.title.alphabet": "· ALPHABET COMPLETE ·",
+        "result.title.capitals": "· CAPITALS UNLOCKED ·",
+        "result.title.marks": "· MARKS UNLOCKED ·",
+        "result.title.new_capital": "· NEW CAPITAL ·",
+        "result.title.new_mark": "· NEW MARK ·",
+        "result.title.new_letter": "· NEW LETTER ·",
+        "result.title.new_record": "· NEW RECORD ·",
+    },
+    "es": {
+        "options.title": "Opciones",
+        "options.language": "Idioma",
+        "options.keyboard": "Teclado",
+        "options.mode": "Modo",
+        "options.source": "Fuente",
+        "options.target": "Objetivo",
+        "options.keyboard_view": "Ver teclado",
+        "mode.practice": "Práctica adaptativa",
+        "mode.book": "Transcribir libro",
+        "view.letters": "Barra de letras",
+        "view.keyboard": "Teclado",
+        "package.es-la": "Español · Latinoamérica",
+        "package.en-us": "English · United States",
+        "unit.wpm": "ppm",
+        "terminal.too_small": "Terminal demasiado pequeña (mínimo 42x10)",
+        "shift": "⇧ Mayús",
+        "restart.exercise": "Ejercicio reiniciado",
+        "restart.fragment": "Fragmento reiniciado",
+        "practice.all_mastered": "Todas las teclas dominadas",
+        "practice.feedback": (
+            "actual {current} ms · mejor {best} ms · objetivo {target} ms/pulsación"
+        ),
+        "book.level": "Nivel: {label}",
+        "book.level_progress": (
+            "Nivel: {label} · {attempts}/{minimum} pulsaciones · "
+            "{accuracy:.0%}/{target:.0%}"
+        ),
+        "book.fragment": "fragmento {current}/{total}",
+        "book.completed": "{title} completada",
+        "book_level.words": "solo palabras",
+        "book_level.accents": "tildes",
+        "book_level.comma": "coma",
+        "book_level.period": "punto",
+        "book_level.semicolon": "punto y coma",
+        "book_level.colon": "dos puntos",
+        "book_level.question": "interrogación",
+        "book_level.exclamation": "exclamación",
+        "book_level.dashes": "guiones",
+        "book_level.quotes": "comillas",
+        "book_level.parentheses": "paréntesis",
+        "book_level.complete": "texto completo",
+        "result.current": "ACTUAL",
+        "result.best": "MEJOR",
+        "result.target": "OBJETIVO",
+        "result.unit_ms": "ms",
+        "result.ms_keystroke": "ms/pulsación",
+        "result.title.mastery": "· DOMINIO COMPLETO ·",
+        "result.title.alphabet": "· ALFABETO COMPLETO ·",
+        "result.title.capitals": "· MAYÚSCULAS DESBLOQUEADAS ·",
+        "result.title.marks": "· SIGNOS DESBLOQUEADOS ·",
+        "result.title.new_capital": "· MAYÚSCULA NUEVA ·",
+        "result.title.new_mark": "· SIGNO NUEVO ·",
+        "result.title.new_letter": "· LETRA NUEVA ·",
+        "result.title.new_record": "· NUEVO RÉCORD ·",
+    },
+}
+
+
+def set_ui_language(language: str) -> None:
+    global UI_LANGUAGE
+    UI_LANGUAGE = language if language in UI_LANGUAGES else DEFAULT_UI_LANGUAGE
+
+
+def translate(key: str, **values: object) -> str:
+    language = TRANSLATIONS.get(UI_LANGUAGE, TRANSLATIONS[DEFAULT_UI_LANGUAGE])
+    template = language.get(key) or TRANSLATIONS[DEFAULT_UI_LANGUAGE].get(key, key)
+    return template.format(**values) if values else template
 ERROR_COLOR = 196
 ERROR_RGB = (235, 71, 71)
 CURRENT_BACKGROUND = 240
@@ -119,22 +242,41 @@ BAR_RGBS = (
     (140, 142, 150),
     (172, 176, 186),
 )
-KEYBOARD_ROWS = (
-    ("q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "´", "¨"),
-    ("a", "s", "d", "f", "g", "h", "j", "k", "l", "ñ"),
-    ("z", "x", "c", "v", "b", "n", "m", ",", ".", "-", "'"),
-)
-KEYBOARD_FINGER_GROUPS = (
-    ("q", "a", "z", "p", "ñ", "-", "´", "¨", "'"),
-    ("w", "s", "x", "o", "l", "."),
-    ("e", "d", "c", "i", "k", ","),
-    ("r", "f", "v", "t", "g", "b", "y", "h", "n", "u", "j", "m"),
-)
-KEYBOARD_FINGER_BY_KEY = {
-    key: finger
-    for finger, group in enumerate(KEYBOARD_FINGER_GROUPS)
-    for key in group
+KEYBOARD_ROWS = {
+    "es": (
+        ("q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "´", "¨"),
+        ("a", "s", "d", "f", "g", "h", "j", "k", "l", "ñ"),
+        ("z", "x", "c", "v", "b", "n", "m", ",", ".", "-", "'"),
+    ),
+    "en": (
+        ("q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "[", "]"),
+        ("a", "s", "d", "f", "g", "h", "j", "k", "l", ";", "'"),
+        ("z", "x", "c", "v", "b", "n", "m", ",", ".", "/", "-"),
+    ),
 }
+KEYBOARD_FINGER_GROUPS = {
+    "es": (
+        ("q", "a", "z", "p", "ñ", "-", "´", "¨", "'"),
+        ("w", "s", "x", "o", "l", "."),
+        ("e", "d", "c", "i", "k", ","),
+        ("r", "f", "v", "t", "g", "b", "y", "h", "n", "u", "j", "m"),
+    ),
+    "en": (
+        ("q", "a", "z", "p", ";", "/", "[", "]", "'", "-"),
+        ("w", "s", "x", "o", "l", "."),
+        ("e", "d", "c", "i", "k", ","),
+        ("r", "f", "v", "t", "g", "b", "y", "h", "n", "u", "j", "m"),
+    ),
+}
+KEYBOARD_FINGER_BY_KEY = {
+    language: {
+        key: finger
+        for finger, group in enumerate(groups)
+        for key in group
+    }
+    for language, groups in KEYBOARD_FINGER_GROUPS.items()
+}
+KEYBOARD_FINGER_COUNT = len(KEYBOARD_FINGER_GROUPS[DEFAULT_KEYBOARD_LANGUAGE])
 KEYBOARD_HAND_GAP = 2
 KEYBOARD_COLOR_BASE = 204
 KEYBOARD_RGBS = (
@@ -259,6 +401,8 @@ class BookPosition:
 class Progress:
     target_wpm: int = TARGET_WPM
     keyboard_view: str = DEFAULT_KEYBOARD_VIEW
+    ui_language: str = DEFAULT_UI_LANGUAGE
+    keyboard_language: str = DEFAULT_KEYBOARD_LANGUAGE
     letters: dict[str, LetterStat] = field(default_factory=dict)
     best_wpm_by_package: dict[str, float] = field(default_factory=dict)
     post_alphabet_focus: str | None = None
@@ -522,6 +666,18 @@ def load_progress(path: Path | None = None) -> Progress:
             keyboard_view = "letters"
         else:
             keyboard_view = DEFAULT_KEYBOARD_VIEW
+        raw_ui_language = raw.get("ui_language")
+        ui_language = (
+            raw_ui_language
+            if raw_ui_language in UI_LANGUAGES
+            else DEFAULT_UI_LANGUAGE
+        )
+        raw_keyboard_language = raw.get("keyboard_language")
+        keyboard_language = (
+            raw_keyboard_language
+            if raw_keyboard_language in KEYBOARD_LANGUAGES
+            else DEFAULT_KEYBOARD_LANGUAGE
+        )
         legacy_unlocked = max(
             INITIAL_LETTERS,
             min(
@@ -638,6 +794,8 @@ def load_progress(path: Path | None = None) -> Progress:
         return Progress(
             target_wpm=target_wpm,
             keyboard_view=keyboard_view,
+            ui_language=ui_language,
+            keyboard_language=keyboard_language,
             letters=letters,
             best_wpm_by_package=best_wpm_by_package,
             post_alphabet_focus=post_alphabet_focus,
@@ -663,6 +821,8 @@ def save_progress(progress: Progress, path: Path | None = None) -> None:
         "key_costs": progress.key_costs,
         "target_wpm": progress.target_wpm,
         "keyboard_view": progress.keyboard_view,
+        "ui_language": progress.ui_language,
+        "keyboard_language": progress.keyboard_language,
         "word_package": progress.word_package,
         "best_wpm": progress.best_wpm_by_package,
         "post_alphabet_focus": progress.post_alphabet_focus,
@@ -684,17 +844,20 @@ def save_progress(progress: Progress, path: Path | None = None) -> None:
 
 
 def unlock_feedback(progress: Progress) -> str:
+    set_ui_language(progress.ui_language)
     if progress.keys_complete:
-        return "Todas las teclas dominadas"
+        return translate("practice.all_mastered")
     focus = progress.weakest_key()
     if focus is None:
-        return "Todas las teclas dominadas"
+        return translate("practice.all_mastered")
     stat = progress.stat(focus)
     current = f"{stat.time_ms:.0f}" if stat.time_ms is not None else "--"
     best = f"{stat.best_time_ms:.0f}" if stat.best_time_ms is not None else "--"
-    return (
-        f"actual {current} ms · mejor {best} ms · "
-        f"objetivo {progress.target_time_ms:.0f} ms/pulsación"
+    return translate(
+        "practice.feedback",
+        current=current,
+        best=best,
+        target=f"{progress.target_time_ms:.0f}",
     )
 
 
@@ -1101,21 +1264,27 @@ class BookSession:
 
 
 def book_level_feedback(progress: Progress) -> str:
-    label = BOOK_LEVELS[progress.book_level][0]
+    set_ui_language(progress.ui_language)
+    label = translate(f"book_level.{BOOK_LEVELS[progress.book_level][0]}")
     if progress.book_level == len(BOOK_LEVELS) - 1:
-        return f"Nivel: {label}"
+        return translate("book.level", label=label)
     accuracy = (
         progress.book_level_correct / progress.book_level_attempts
         if progress.book_level_attempts
         else 1.0
     )
-    return (
-        f"Nivel: {label} · {progress.book_level_attempts}/{BOOK_LEVEL_MIN_ATTEMPTS} "
-        f"pulsaciones · {accuracy:.0%}/{BOOK_LEVEL_ACCURACY:.0%}"
+    return translate(
+        "book.level_progress",
+        label=label,
+        attempts=progress.book_level_attempts,
+        minimum=BOOK_LEVEL_MIN_ATTEMPTS,
+        accuracy=accuracy,
+        target=BOOK_LEVEL_ACCURACY,
     )
 
 
 def record_book_session(progress: Progress, session: BookSession) -> str | None:
+    set_ui_language(progress.ui_language)
     progress.book_level_attempts += session.attempts
     progress.book_level_correct += session.correct
     if progress.book_level >= len(BOOK_LEVELS) - 1:
@@ -1128,7 +1297,7 @@ def record_book_session(progress: Progress, session: BookSession) -> str | None:
         progress.book_level += 1
         progress.book_level_attempts = 0
         progress.book_level_correct = 0
-        return BOOK_LEVELS[progress.book_level][0]
+        return translate(f"book_level.{BOOK_LEVELS[progress.book_level][0]}")
     return None
 
 
@@ -1256,8 +1425,10 @@ class Theme:
                 curses.COLOR_YELLOW,
             )
         )
-        keyboard_foregrounds = (curses.COLOR_WHITE,) * len(KEYBOARD_FINGER_GROUPS)
-        keyboard_locked_foregrounds = (curses.COLOR_WHITE,) * len(KEYBOARD_FINGER_GROUPS)
+        keyboard_foregrounds = (curses.COLOR_WHITE,) * KEYBOARD_FINGER_COUNT
+        keyboard_locked_foregrounds = (
+            (curses.COLOR_WHITE,) * KEYBOARD_FINGER_COUNT
+        )
         if curses.COLORS >= 256:
             # Use dark shades of the terminal's accent families for readability.
             if curses.can_change_color():
@@ -1375,6 +1546,7 @@ def change_target_wpm(target_wpm: int, direction: int) -> int:
 
 
 ACCENT_BASE_KEYS = {"á": "a", "é": "e", "í": "i", "ó": "o", "ú": "u"}
+COMPOSED_BASE_KEYS = {**ACCENT_BASE_KEYS, "ñ": "n"}
 
 
 def keyboard_focus_keys(focus: str | None) -> set[str]:
@@ -1400,13 +1572,23 @@ def draw_keyboard_layout(
 ) -> None:
     _, width = stdscr.getmaxyx()
     active_keys = set(progress.active_keys)
+    language = (
+        progress.keyboard_language
+        if progress.keyboard_language in KEYBOARD_LANGUAGES
+        else DEFAULT_KEYBOARD_LANGUAGE
+    )
+    rows = KEYBOARD_ROWS[language]
+    fingers = KEYBOARD_FINGER_BY_KEY[language]
+    layout_keys = {letter for row in rows for letter in row}
     display_focus_keys = keyboard_focus_keys(focus)
+    if focus is not None and not display_focus_keys & layout_keys:
+        base = COMPOSED_BASE_KEYS.get(focus.lower())
+        if base in layout_keys:
+            display_focus_keys.add(base)
     shift_focus = focus is not None and focus.isupper()
-    keyboard_width = len(KEYBOARD_ROWS[0]) * 3 + KEYBOARD_HAND_GAP
+    keyboard_width = len(rows[0]) * 3 + KEYBOARD_HAND_GAP
     keyboard_x = (width - keyboard_width) // 2
-    for row_index, (row, indent) in enumerate(
-        zip(KEYBOARD_ROWS, (0, 1, 2))
-    ):
+    for row_index, (row, indent) in enumerate(zip(rows, (0, 1, 2))):
         for index, letter in enumerate(row):
             if letter in ",.'":
                 unlocked = letter in active_keys
@@ -1419,7 +1601,7 @@ def draw_keyboard_layout(
                 extra = curses.A_DIM
             else:
                 extra = curses.A_BOLD
-            finger = KEYBOARD_FINGER_BY_KEY[letter]
+            finger = fingers[letter]
             theme = (
                 Theme.KEYBOARD_FINGER_THEMES[finger]
                 if unlocked
@@ -1429,7 +1611,7 @@ def draw_keyboard_layout(
             if letter in display_focus_keys:
                 label = f"[{letter}]"
                 base = focus.lower() if focus is not None else ""
-                if shift_focus and letter == ACCENT_BASE_KEYS.get(base, base):
+                if shift_focus and letter == COMPOSED_BASE_KEYS.get(base, base):
                     label = f"[{focus}]"
             safe_addstr(
                 stdscr,
@@ -1446,7 +1628,7 @@ def draw_keyboard_layout(
 def choose_options(
     stdscr: curses.window,
     progress: Progress,
-) -> tuple[str, str, str, int, str]:
+) -> tuple[str, str, str, int, str, str, str]:
     mode = progress.mode
     word_package = progress.word_package
     book = progress.selected_book
@@ -1456,18 +1638,27 @@ def choose_options(
         if progress.keyboard_view in KEYBOARD_VIEWS
         else DEFAULT_KEYBOARD_VIEW
     )
+    ui_language = (
+        progress.ui_language
+        if progress.ui_language in UI_LANGUAGES
+        else DEFAULT_UI_LANGUAGE
+    )
+    keyboard_language = (
+        progress.keyboard_language
+        if progress.keyboard_language in KEYBOARD_LANGUAGES
+        else DEFAULT_KEYBOARD_LANGUAGE
+    )
     selected = 0
     while True:
-        rows = (
-            ("mode", "source", "target", "keyboard")
-            if mode == "practice"
-            else ("mode", "source")
-        )
+        set_ui_language(ui_language)
+        rows = ["language", "keyboard_language", "mode", "source"]
+        if mode == "practice":
+            rows.extend(("target", "keyboard"))
         selected = min(selected, len(rows) - 1)
         stdscr.erase()
         height, width = stdscr.getmaxyx()
         if height < 10 or width < 42:
-            message = "Terminal demasiado pequeña (mínimo 42x10)"
+            message = translate("terminal.too_small")
             safe_addstr(
                 stdscr,
                 height // 2,
@@ -1480,23 +1671,56 @@ def choose_options(
                 stdscr,
                 2,
                 4,
-                "Opciones",
+                translate("options.title"),
                 attr(Theme.ACCENT, curses.A_BOLD),
             )
-            values = [
-                ("Modo", MODE_LABELS[mode]),
-                (
-                    "Fuente",
-                    WORD_PACKAGE_LABELS[word_package]
-                    if mode == "practice"
-                    else BOOK_LABELS[book],
-                ),
-            ]
-            if mode == "practice":
-                values.append(("Objetivo", f"{target_wpm} ppm"))
-                values.append(("Ver teclado", KEYBOARD_VIEW_LABELS[keyboard_view]))
-            row_step = 1 if height < 13 else 2
-            start_y = max(4, min((height - len(rows) * row_step) // 2, height - 6))
+            values: list[tuple[str, str]] = []
+            for row in rows:
+                if row == "language":
+                    values.append(
+                        (
+                            translate("options.language"),
+                            UI_LANGUAGE_LABELS[ui_language],
+                        )
+                    )
+                elif row == "keyboard_language":
+                    values.append(
+                        (
+                            translate("options.keyboard"),
+                            KEYBOARD_LANGUAGE_LABELS[keyboard_language],
+                        )
+                    )
+                elif row == "mode":
+                    values.append(
+                        (translate("options.mode"), translate(f"mode.{mode}"))
+                    )
+                elif row == "source":
+                    source = (
+                        translate(f"package.{word_package}")
+                        if mode == "practice"
+                        else BOOK_LABELS[book]
+                    )
+                    values.append((translate("options.source"), source))
+                elif row == "target":
+                    values.append(
+                        (
+                            translate("options.target"),
+                            f"{target_wpm} {translate('unit.wpm')}",
+                        )
+                    )
+                else:
+                    values.append(
+                        (
+                            translate("options.keyboard_view"),
+                            translate(f"view.{keyboard_view}"),
+                        )
+                    )
+            row_step = 2 if height >= len(rows) * 2 + 3 else 1
+            start_y = max(4, (height - len(rows) * row_step) // 2)
+            start_y = min(
+                start_y,
+                height - 1 - (len(rows) - 1) * row_step,
+            )
             for index, (label, value) in enumerate(values):
                 is_selected = index == selected
                 marker = "›" if is_selected else " "
@@ -1508,28 +1732,23 @@ def choose_options(
                     stdscr,
                     start_y + index * row_step,
                     6,
-                    f"{marker} {label:<12} {value}",
+                    f"{marker} {label:<13} {value}",
                     style,
                 )
-            help_text = "↑↓ elegir · ←→ cambiar · Enter aplicar · Esc cancelar"
-            safe_addstr(
-                stdscr,
-                height - 2,
-                max(3, (width - len(help_text)) // 2),
-                help_text,
-                attr(Theme.MUTED, curses.A_DIM),
-            )
         stdscr.refresh()
         key = stdscr.get_wch()
         if key == "\x03":
             raise KeyboardInterrupt
         if key == "\x1b":
+            set_ui_language(progress.ui_language)
             return (
                 progress.mode,
                 progress.word_package,
                 progress.selected_book,
                 progress.target_wpm,
                 progress.keyboard_view,
+                progress.ui_language,
+                progress.keyboard_language,
             )
         if key in (curses.KEY_UP, "k"):
             selected = (selected - 1) % len(rows)
@@ -1537,9 +1756,20 @@ def choose_options(
             selected = (selected + 1) % len(rows)
         elif key in (curses.KEY_LEFT, curses.KEY_RIGHT, "h", "l", " "):
             direction = -1 if key in (curses.KEY_LEFT, "h") else 1
-            if rows[selected] == "target":
+            row = rows[selected]
+            if row == "language":
+                ui_language = UI_LANGUAGES[
+                    (UI_LANGUAGES.index(ui_language) + direction)
+                    % len(UI_LANGUAGES)
+                ]
+            elif row == "keyboard_language":
+                keyboard_language = KEYBOARD_LANGUAGES[
+                    (KEYBOARD_LANGUAGES.index(keyboard_language) + direction)
+                    % len(KEYBOARD_LANGUAGES)
+                ]
+            elif row == "target":
                 target_wpm = change_target_wpm(target_wpm, direction)
-            elif rows[selected] == "keyboard":
+            elif row == "keyboard":
                 keyboard_view = KEYBOARD_VIEWS[
                     (KEYBOARD_VIEWS.index(keyboard_view) + direction)
                     % len(KEYBOARD_VIEWS)
@@ -1549,11 +1779,19 @@ def choose_options(
                     mode,
                     word_package,
                     book,
-                    rows[selected],
+                    row,
                     direction,
                 )
         elif key in ("\n", "\r", curses.KEY_ENTER):
-            return mode, word_package, book, target_wpm, keyboard_view
+            return (
+                mode,
+                word_package,
+                book,
+                target_wpm,
+                keyboard_view,
+                ui_language,
+                keyboard_language,
+            )
 
 
 def draw(
@@ -1563,13 +1801,14 @@ def draw(
 ) -> None:
     stdscr.erase()
     height, width = stdscr.getmaxyx()
+    progress = session.progress
+    set_ui_language(progress.ui_language)
     if height < 10 or width < 42:
-        message = "Terminal demasiado pequeña (mínimo 42x10)"
+        message = translate("terminal.too_small")
         safe_addstr(stdscr, height // 2, max(0, (width - len(message)) // 2), message, attr(Theme.WARNING, curses.A_BOLD))
         stdscr.refresh()
         return
 
-    progress = session.progress
     focus = session.focus
     if progress.keyboard_view == "keyboard":
         panel_y = height - 4
@@ -1639,7 +1878,7 @@ def draw(
             attr(Theme.WARNING, curses.A_BOLD),
         )
     elif focus is not None and focus.isupper():
-        hint = "⇧ Mayús"
+        hint = translate("shift")
         safe_addstr(
             stdscr,
             height - 1,
@@ -1768,8 +2007,9 @@ def draw_book(
 ) -> None:
     stdscr.erase()
     height, width = stdscr.getmaxyx()
+    set_ui_language(progress.ui_language)
     if height < 10 or width < 42:
-        message = "Terminal demasiado pequeña (mínimo 42x10)"
+        message = translate("terminal.too_small")
         safe_addstr(
             stdscr,
             height // 2,
@@ -1787,10 +2027,16 @@ def draw_book(
         len(book.sections[position.section].chunks),
     )
     section = book.sections[section_index]
-    metrics = f"{session.wpm:>3.0f} ppm  {session.accuracy:>4.0%}  {book_completion(progress, book):>4.0%}"
+    metrics = (
+        f"{session.wpm:>3.0f} {translate('unit.wpm')}  "
+        f"{session.accuracy:>4.0%}  {book_completion(progress, book):>4.0%}"
+    )
     safe_addstr(stdscr, 1, 3, book.title, attr(Theme.ACCENT, curses.A_BOLD))
     safe_addstr(stdscr, 1, width - len(metrics) - 3, metrics, curses.A_BOLD)
-    section_label = f"{section.title} · fragmento {fragment_index}/{fragment_total}"
+    section_label = (
+        f"{section.title} · "
+        f"{translate('book.fragment', current=fragment_index, total=fragment_total)}"
+    )
     safe_addstr(stdscr, 2, 3, section_label, attr(Theme.MUTED, curses.A_DIM))
     safe_addstr(stdscr, 3, 3, "─" * max(1, width - 6), attr(Theme.MUTED, curses.A_DIM))
 
@@ -1848,16 +2094,38 @@ def apply_options(stdscr: curses.window, progress: Progress) -> bool:
         progress.selected_book,
         progress.target_wpm,
         progress.keyboard_view,
+        progress.ui_language,
+        progress.keyboard_language,
     )
-    mode, word_package, book, target_wpm, keyboard_view = choose_options(stdscr, progress)
-    changed = (mode, word_package, book, target_wpm, keyboard_view) != previous
+    (
+        mode,
+        word_package,
+        book,
+        target_wpm,
+        keyboard_view,
+        ui_language,
+        keyboard_language,
+    ) = choose_options(stdscr, progress)
+    changed = (
+        mode,
+        word_package,
+        book,
+        target_wpm,
+        keyboard_view,
+        ui_language,
+        keyboard_language,
+    ) != previous
     if not changed:
+        set_ui_language(progress.ui_language)
         return False
     progress.mode = mode
     progress.word_package = word_package
     progress.selected_book = book
     progress.target_wpm = target_wpm
     progress.keyboard_view = keyboard_view
+    progress.ui_language = ui_language
+    progress.keyboard_language = keyboard_language
+    set_ui_language(ui_language)
     if word_package != previous[1] or target_wpm != previous[3]:
         progress.reset_post_alphabet_focus()
     if word_package != previous[1]:
@@ -1938,8 +2206,9 @@ def draw_result(
 ) -> None:
     stdscr.erase()
     height, width = stdscr.getmaxyx()
+    set_ui_language(progress.ui_language)
     if height < 10 or width < 42:
-        message = "Terminal demasiado pequeña (mínimo 42x10)"
+        message = translate("terminal.too_small")
         safe_addstr(
             stdscr,
             height // 2,
@@ -1973,37 +2242,37 @@ def draw_result(
     blink = False
     if unlocked:
         if progress.keys_complete:
-            title = "· DOMINIO COMPLETO ·"
+            title = translate("result.title.mastery")
         elif alphabet_complete(progress.active_keys) and any(
             key.islower() for key in unlocked
         ):
-            title = "· ALFABETO COMPLETO ·"
+            title = translate("result.title.alphabet")
         elif (
             alphabet_complete(progress.active_keys)
             and any(key.isupper() for key in unlocked)
             and session.focus is not None
             and session.focus.islower()
         ):
-            title = "· MAYÚSCULAS DESBLOQUEADAS ·"
+            title = translate("result.title.capitals")
         elif (
             capitals_complete(progress.active_keys)
             and any(key in ",.'" for key in unlocked)
             and session.focus is not None
             and session.focus.isupper()
         ):
-            title = "· SIGNOS DESBLOQUEADOS ·"
+            title = translate("result.title.marks")
         elif unlocked[0].isupper():
-            title = "· MAYÚSCULA NUEVA ·"
+            title = translate("result.title.new_capital")
         elif unlocked[0] in ",.'":
-            title = "· SIGNO NUEVO ·"
+            title = translate("result.title.new_mark")
         else:
-            title = "· LETRA NUEVA ·"
+            title = translate("result.title.new_letter")
         blink = True
     elif hi_score:
-        title = "· NUEVO RÉCORD ·"
+        title = translate("result.title.new_record")
         blink = True
     elif progress.keys_complete:
-        title = "· DOMINIO COMPLETO ·"
+        title = translate("result.title.mastery")
 
     if progress.keys_complete:
         current_wpm = session.wpm
@@ -2020,11 +2289,16 @@ def draw_result(
             progress.target_wpm,
             elapsed_ms // RESULT_WPM_MS_PER_UNIT,
         )
-        labels = ("CURRENT", "BEST", "TARGET")
+        labels = (
+            translate("result.current"),
+            translate("result.best"),
+            translate("result.target"),
+        )
+        unit = translate("unit.wpm")
         values = (
-            f"{animated_current_wpm:03.0f} ppm",
-            f"{animated_best_wpm:03.0f} ppm",
-            f"{animated_target_wpm:03d} ppm",
+            f"{animated_current_wpm:03.0f} {unit}",
+            f"{animated_best_wpm:03.0f} {unit}",
+            f"{animated_target_wpm:03d} {unit}",
         )
     elif focus is None:
         current_ms = 0
@@ -2034,11 +2308,16 @@ def draw_result(
         animated_target_ms = min(
             round(target), elapsed_ms // RESULT_COUNT_MS_PER_UNIT
         )
-        labels = ("CURRENT", "BEST", "TARGET")
+        labels = (
+            translate("result.current"),
+            translate("result.best"),
+            translate("result.target"),
+        )
+        unit = translate("result.unit_ms")
         values = (
-            f"{animated_current_ms:03d} ms",
-            f"{animated_best_ms:03d} ms",
-            f"{animated_target_ms:03d} ms",
+            f"{animated_current_ms:03d} {unit}",
+            f"{animated_best_ms:03d} {unit}",
+            f"{animated_target_ms:03d} {unit}",
         )
     else:
         stat = progress.stat(focus)
@@ -2047,11 +2326,16 @@ def draw_result(
         animated_current_ms = min(current_ms, elapsed_ms // RESULT_COUNT_MS_PER_UNIT)
         animated_best_ms = min(best_ms, elapsed_ms // RESULT_COUNT_MS_PER_UNIT)
         animated_target_ms = min(round(target), elapsed_ms // RESULT_COUNT_MS_PER_UNIT)
-        labels = ("CURRENT", "BEST", "TARGET")
+        labels = (
+            translate("result.current"),
+            translate("result.best"),
+            translate("result.target"),
+        )
+        unit = translate("result.unit_ms")
         values = (
-            f"{animated_current_ms:03d} ms",
-            f"{animated_best_ms:03d} ms",
-            f"{animated_target_ms:03d} ms",
+            f"{animated_current_ms:03d} {unit}",
+            f"{animated_best_ms:03d} {unit}",
+            f"{animated_target_ms:03d} {unit}",
         )
 
     if celebrate:
@@ -2105,7 +2389,7 @@ def draw_result(
     safe_addstr(stdscr, box_y + 3, box_x, bottom, attr(Theme.MUTED))
 
     if not progress.keys_complete:
-        timing_label = "ms/pulsación"
+        timing_label = translate("result.ms_keystroke")
         if focus is not None:
             cost = progress.key_cost(focus)
             raw_ms = progress.stat(focus).raw_time_ms
@@ -2159,6 +2443,7 @@ def run_result(
 
 
 def run_practice_session(stdscr: curses.window, progress: Progress) -> str:
+    set_ui_language(progress.ui_language)
     session = Session(progress, generate_lesson(progress))
     previous_keys = set(progress.active_keys)
     notice = ""
@@ -2177,7 +2462,7 @@ def run_practice_session(stdscr: curses.window, progress: Progress) -> str:
             return "switch"
         if key in ("\b", "\x7f", curses.KEY_BACKSPACE):
             session.reset()
-            notice = "Ejercicio reiniciado"
+            notice = translate("restart.exercise")
         elif isinstance(key, str) and key.isprintable():
             session.add(key)
 
@@ -2207,11 +2492,16 @@ def run_practice_session(stdscr: curses.window, progress: Progress) -> str:
     return run_result(stdscr, session, progress, unlocked, hi_score)
 
 
-def draw_finished_book(stdscr: curses.window, book: Book) -> None:
+def draw_finished_book(
+    stdscr: curses.window,
+    progress: Progress,
+    book: Book,
+) -> None:
     stdscr.erase()
     height, width = stdscr.getmaxyx()
+    set_ui_language(progress.ui_language)
     if height < 10 or width < 42:
-        message = "Terminal demasiado pequeña (mínimo 42x10)"
+        message = translate("terminal.too_small")
         safe_addstr(
             stdscr,
             height // 2,
@@ -2220,7 +2510,7 @@ def draw_finished_book(stdscr: curses.window, book: Book) -> None:
             attr(Theme.WARNING, curses.A_BOLD),
         )
     else:
-        title = f"{book.title} completada"
+        title = translate("book.completed", title=book.title)
         safe_addstr(
             stdscr,
             height // 2 - 1,
@@ -2233,7 +2523,7 @@ def draw_finished_book(stdscr: curses.window, book: Book) -> None:
 
 def run_finished_book(stdscr: curses.window, progress: Progress, book: Book) -> str:
     while True:
-        draw_finished_book(stdscr, book)
+        draw_finished_book(stdscr, progress, book)
         key = stdscr.get_wch()
         if key == "\x03":
             return "exit"
@@ -2247,6 +2537,7 @@ def run_finished_book(stdscr: curses.window, progress: Progress, book: Book) -> 
 
 
 def run_book_session(stdscr: curses.window, progress: Progress) -> str:
+    set_ui_language(progress.ui_language)
     book = load_book(progress.selected_book)
     position, _ = current_book_chunk(progress, book)
     if position.completed:
@@ -2280,7 +2571,7 @@ def run_book_session(stdscr: curses.window, progress: Progress) -> str:
             return "switch"
         if key in ("\b", "\x7f", curses.KEY_BACKSPACE):
             session.reset()
-            notice = "Fragmento reiniciado"
+            notice = translate("restart.fragment")
         elif key in ("\n", "\r", curses.KEY_ENTER):
             session.add("\n")
         elif isinstance(key, str) and key.isprintable():
@@ -2362,6 +2653,7 @@ def main() -> int:
     if args.reset:
         path.unlink(missing_ok=True)
     progress = load_progress(path)
+    set_ui_language(progress.ui_language)
     for character, cost in args.key_cost:
         progress.set_key_cost(character, cost)
     if args.words is not None:
